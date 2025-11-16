@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vashandi - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(135deg, #1e293b 0%, #0f172a 100%),
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(15, 23, 42, 0.5) 10px, rgba(15, 23, 42, 0.5) 20px);
+            z-index: -1;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 0;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(59, 130, 246, 0.02) 10px,
+                rgba(59, 130, 246, 0.02) 20px
+            );
+            pointer-events: none;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-size: 1.05em;
+            position: relative;
+        }
+
+        .form-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(51, 65, 85, 0.8);
+            background: rgba(15, 23, 42, 0.6);
+            color: #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .form-container {
+            position: relative;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid rgba(51, 65, 85, 0.8);
+            background: rgba(15, 23, 42, 0.6);
+            color: #f1f5f9;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px 32px;
+            border: none;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(59, 130, 246, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .name-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">🛠️ Vashandi</div>
+            <p class="subtitle">Connect with skilled workers</p>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="form-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <div class="form-container">
+                <!-- Login Form -->
+                <div class="form-section active" id="loginForm">
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" name="username" required placeholder="Enter your username">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" required placeholder="Enter your password">
+                        </div>
+                        <button type="submit" class="submit-btn">Login</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div class="form-section" id="registerForm">
+                    <form onsubmit="handleRegister(event)">
+                        <div class="name-row">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" required placeholder="First name">
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" required placeholder="Last name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" name="username" required placeholder="Choose a username">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" required minlength="8" placeholder="Minimum 8 characters">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" name="password2" required minlength="8" placeholder="Re-enter password">
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select name="current_role" required>
+                                <option value="client">Client - Looking for services</option>
+                                <option value="provider">Service Provider - Offering services</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" name="location" placeholder="e.g., Harare, Zimbabwe">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone (Optional)</label>
+                            <input type="tel" name="phone" placeholder="Your phone number">
+                        </div>
+                        <button type="submit" class="submit-btn">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(tab + 'Form').classList.add('active');
+
+            // Clear messages
+            hideMessages();
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            document.getElementById('successMessage').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.classList.add('show');
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            hideMessages();
+
+            const formData = new FormData(event.target);
+            const data = {
+                username: formData.get('username'),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch('/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    showError(result.error || 'Login failed. Please try again.');
+                }
+            } catch (error) {
+                showError('An error occurred. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            hideMessages();
+
+            const formData = new FormData(event.target);
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                password2: formData.get('password2'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                current_role: formData.get('current_role'),
+                location: formData.get('location'),
+                phone: formData.get('phone')
+            };
+
+            if (data.password !== data.password2) {
+                showError('Passwords do not match!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Registration successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    const errors = Object.values(result).flat().join(' ');
+                    showError(errors || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                showError('An error occurred. Please try again.');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
