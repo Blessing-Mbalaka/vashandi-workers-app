@@ -1354,7 +1354,25 @@
 
         // Contact Provider
         function contactProvider(serviceId) {
-            alert('Contact feature - In production, this would open a messaging interface');
+            // Get the service from servicesData
+            const service = servicesData.find(s => s.id === serviceId);
+            if (!service) {
+                alert('Service not found');
+                return;
+            }
+            
+            // Open contact modal via messaging module
+            if (typeof messagingModule !== 'undefined') {
+                messagingModule.openContactModal(
+                    serviceId,
+                    service.title,
+                    service.provider_id,
+                    service.provider_name,
+                    service.provider_name.split(' ').map(n => n[0]).join('')
+                );
+            } else {
+                alert('Messaging system is loading. Please try again.');
+            }
         }
 
         // Toggle Mode
@@ -1486,5 +1504,6 @@
             }
         }
     </script>
+    <script src="{% static 'js/messaging.js' %}"></script>
 </body>
 </html>
