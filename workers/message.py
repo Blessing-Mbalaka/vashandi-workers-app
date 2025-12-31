@@ -109,32 +109,40 @@ class MessageManager:
             List of conversation dictionaries
         """
         # Get all messages involving this user
-        messages = Message.objects.filter(
+        sender_ids = set(Message.objects.filter(
             sender=user
-        ).values_list('recipient_id', flat=True).distinct() | \
-        Message.objects.filter(
+        ).values_list('recipient_id', flat=True))
+        recipient_ids = set(Message.objects.filter(
             recipient=user
-        ).values_list('sender_id', flat=True).distinct()
+        ).values_list('sender_id', flat=True))
+        user_ids = (sender_ids | recipient_ids) - {None}
 
         conversations = []
-        for user_id in messages:
-            other_user = User.objects.get(id=user_id)
+        for user_id in user_ids:
+            other_user = User.objects.filter(id=user_id).first()
+            if not other_user:
+                continue
+
             latest_message = Message.objects.filter(
                 sender__in=[user, other_user],
                 recipient__in=[user, other_user]
-            ).order_by('-created_at').first()
+            ).select_related('sender', 'recipient').order_by('-created_at').first()
 
             if latest_message:
                 conversations.append({
                     'other_user': other_user,
                     'latest_message': latest_message,
-                    'unread': latest_message.recipient == user and not latest_message.is_read
+                    'unread': Message.objects.filter(
+                        sender=other_user,
+                        recipient=user,
+                        is_read=False
+                    ).exists()
                 })
 
         return sorted(conversations, key=lambda x: x['latest_message'].created_at, reverse=True)
 
     @staticmethod
-    def format_message(message):
+    def format_message(message, current_user=None):
         """
         Format a message for API response
         
@@ -156,7 +164,7 @@ class MessageManager:
             'is_read': message.is_read,
             'created_at': message.created_at.isoformat(),
             'time_ago': timesince(message.created_at) + ' ago',
-            'is_sent_by_user': message.sender_id == message.recipient_id  # Will be set in view
+            'is_sent_by_user': current_user.id == message.sender_id if current_user else False
         }
 
 

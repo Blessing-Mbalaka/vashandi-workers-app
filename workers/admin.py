@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Service, Job, Review, Message
+from .models import User, Service, Job, Review, Message, Bid, Notification
 
 
 @admin.register(User)
@@ -44,4 +44,20 @@ class MessageAdmin(admin.ModelAdmin):
     list_display = ['sender', 'recipient', 'service', 'is_read', 'created_at']
     list_filter = ['is_read', 'created_at']
     search_fields = ['content', 'sender__username', 'recipient__username']
+    readonly_fields = ['created_at']
+
+
+@admin.register(Bid)
+class BidAdmin(admin.ModelAdmin):
+    list_display = ['job', 'provider', 'amount', 'timeline', 'is_accepted', 'withdrawn', 'created_at']
+    list_filter = ['timeline', 'is_accepted', 'withdrawn']
+    search_fields = ['job__title', 'provider__username']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['recipient', 'notification_type', 'title', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read']
+    search_fields = ['title', 'description', 'recipient__username']
     readonly_fields = ['created_at']

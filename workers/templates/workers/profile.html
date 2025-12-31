@@ -1,0 +1,159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile | Vashandi</title>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        h1 {
+            margin-bottom: 1rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+        label {
+            display: block;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            margin-bottom: 0.3rem;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 1.5rem;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+        }
+        .status {
+            margin-top: 1rem;
+            font-size: 0.9em;
+            color: #22c55e;
+        }
+        a.back-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back-link">&larr; Back to Dashboard</a>
+        <h1>{{ user.get_full_name }}</h1>
+        <p style="color:#94a3b8; margin-bottom:1.5rem;">Update your contact information and bio so clients know who you are.</p>
+        <form id="profileForm">
+            <div class="form-grid">
+                <div>
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="first_name" value="{{ user.first_name }}">
+                </div>
+                <div>
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="last_name" value="{{ user.last_name }}">
+                </div>
+                <div>
+                    <label for="phone">Phone</label>
+                    <input type="text" id="phone" name="phone" value="{{ user.phone }}">
+                </div>
+                <div>
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="{{ user.location }}">
+                </div>
+            </div>
+            <div style="margin-top:1rem;">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio">{{ user.bio }}</textarea>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn btn-secondary" onclick="window.location='{% url 'dashboard' %}'">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+            <div class="status" id="statusMessage" style="display:none;"></div>
+        </form>
+    </div>
+    <script>
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            if (match) return decodeURIComponent(match[2]);
+            return null;
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const payload = {};
+            formData.forEach((value, key) => payload[key] = value);
+            try {
+                const response = await fetch('/api/user/', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                const status = document.getElementById('statusMessage');
+                status.style.display = 'block';
+                if (response.ok) {
+                    status.style.color = '#22c55e';
+                    status.textContent = 'Profile updated successfully.';
+                } else {
+                    status.style.color = '#ef4444';
+                    status.textContent = data.error || 'Failed to update profile.';
+                }
+            } catch (error) {
+                alert('Unable to update profile. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

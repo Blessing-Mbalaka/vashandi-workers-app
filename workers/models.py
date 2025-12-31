@@ -1,4 +1,6 @@
 from django.db import models
+from decimal import Decimal
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -154,6 +156,66 @@ class Message(models.Model):
     
     class Meta:
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"Message from {self.sender.get_full_name()} to {self.recipient.get_full_name()}"
+
+
+class Bid(models.Model):
+    """Bid submitted by a provider for a job"""
+
+    TIMELINE_CHOICES = [
+        ('asap', 'ASAP'),
+        ('1_week', 'Within 1 week'),
+        ('2_weeks', 'Within 2 weeks'),
+        ('30_days', 'Within 30 days'),
+        ('custom', 'Custom date'),
+    ]
+
+    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bids')
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='bids')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    proposal_message = models.TextField()
+    timeline = models.CharField(max_length=20, choices=TIMELINE_CHOICES)
+    is_accepted = models.BooleanField(default=False)
+    withdrawn = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['provider', 'job']
+
+    def __str__(self):
+        return f"Bid by {self.provider.get_full_name()} on {self.job.title}"
+
+
+class Notification(models.Model):
+    """System notifications for users"""
+
+    MESSAGE = 'message'
+    BID = 'bid'
+    STATUS = 'status_change'
+    REVIEW = 'review'
+    NOTIFICATION_TYPES = [
+        (MESSAGE, 'Message'),
+        (BID, 'Bid'),
+        (STATUS, 'Status Change'),
+        (REVIEW, 'Review'),
+    ]
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=150)
+    description = models.TextField()
+    related_object_id = models.PositiveIntegerField(null=True, blank=True)
+    related_model = models.CharField(max_length=100, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.recipient.username}: {self.title}"

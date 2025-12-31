@@ -7,12 +7,15 @@ router.register(r'services', views.ServiceViewSet, basename='service')
 router.register(r'jobs', views.JobViewSet, basename='job')
 router.register(r'reviews', views.ReviewViewSet, basename='review')
 router.register(r'messages', views.MessageViewSet, basename='message')
+router.register(r'bids', views.BidViewSet, basename='bid')
+router.register(r'notifications', views.NotificationViewSet, basename='notification')
 
 urlpatterns = [
     # Template views
     path('', views.dashboard_view, name='dashboard'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile_view, name='profile'),
     
     # API endpoints
     path('api/', include(router.urls)),

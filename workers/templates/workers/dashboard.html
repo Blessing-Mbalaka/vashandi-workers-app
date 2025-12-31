@@ -205,6 +205,86 @@
             transform: translateY(-2px);
         }
 
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-button {
+            position: relative;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            color: #cbd5e1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .icon-button:hover {
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ef4444;
+            color: white;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 0.7em;
+            font-weight: 700;
+            display: none;
+        }
+
+        .badge.show {
+            display: inline-block;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            right: 0;
+            top: 60px;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: none;
+            flex-direction: column;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 200;
+        }
+
+        .notification-dropdown.show {
+            display: flex;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item.unread {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .notification-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
         /* Main Container */
         .container {
             max-width: 1400px;
@@ -337,6 +417,85 @@
         /* Services Grid */
         .services-section {
             margin-bottom: 2rem;
+        }
+
+        .inbox-section {
+            margin-bottom: 2rem;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            border-radius: 0;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .conversation-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+
+        .conversation-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            padding: 1rem;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .conversation-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-3px);
+        }
+
+        .conversation-card.unread {
+            border-color: rgba(59, 130, 246, 0.6);
+            background: rgba(59, 130, 246, 0.07);
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .conversation-header span {
+            font-size: 0.8em;
+            color: #94a3b8;
+        }
+
+        .conversation-preview {
+            color: #cbd5e1;
+            font-size: 0.9em;
+            line-height: 1.4;
+            max-height: 3em;
+            overflow: hidden;
+        }
+
+        .filters-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-panel select,
+        .filters-panel input {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            color: #cbd5e1;
+            padding: 10px 12px;
+            border-radius: 6px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75em;
+            font-weight: 700;
         }
 
         .section-header {
@@ -566,6 +725,23 @@
 
         .modal.show {
             display: flex;
+        }
+
+        .inbox-modal-sidebar {
+            width: 35%;
+            border-right: 1px solid rgba(51, 65, 85, 0.5);
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .inbox-modal-sidebar .conversation-card {
+            border-radius: 0;
+        }
+
+        .inbox-modal-thread {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-content {
@@ -872,13 +1048,29 @@
                         <div class="toggle-slider"></div>
                     </div>
                 </div>
-                <div class="user-profile">
+                <div class="nav-actions">
+                    <button class="icon-button" id="messagesButton" onclick="openInboxPanel()">
+                        Messages
+                        <span class="badge" id="messagesBadge">0</span>
+                    </button>
+                    <div style="position: relative;">
+                        <button class="icon-button" id="notificationsButton" onclick="toggleNotificationsDropdown()">
+                            Notifications
+                            <span class="badge" id="notificationsBadge">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationsDropdown">
+                            <div id="notificationsList"></div>
+                            <button class="btn-secondary" style="margin: 12px;" onclick="markAllNotificationsRead()">Mark all as read</button>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'profile' %}" class="user-profile" style="text-decoration: none;">
                     <div class="avatar" id="userAvatar">{{ user.avatar_initials }}</div>
                     <div class="user-info">
                         <h4 id="userName">{{ user.get_full_name }}</h4>
                         <p id="userRole">{{ user.get_current_role_display }}</p>
                     </div>
-                </div>
+                </a>
                 <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
             </div>
         </div>
@@ -902,6 +1094,47 @@
         <!-- Stats Grid -->
         <div class="stats-grid" id="statsGrid">
             <!-- Stats will be loaded via API -->
+        </div>
+
+        <!-- Inbox Section -->
+        <section class="inbox-section">
+            <div class="section-header">
+                <h2>Inbox</h2>
+                <button class="btn-secondary" onclick="openInboxPanel()">Open Inbox</button>
+            </div>
+            <div class="conversation-list" id="conversationList">
+                <p style="color: #64748b;">No conversations yet. Start messaging providers to see updates here.</p>
+            </div>
+        </section>
+
+        <!-- Job Filters -->
+        <div class="filters-panel" id="jobFiltersPanel" style="display: none;">
+            <select id="statusFilter" onchange="handleJobFilterChange()">
+                <option value="all">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="number" id="minBudgetFilter" placeholder="Min Budget" onblur="handleJobFilterChange()">
+            <input type="number" id="maxBudgetFilter" placeholder="Max Budget" onblur="handleJobFilterChange()">
+            <input type="text" id="locationFilter" placeholder="Location" onblur="handleJobFilterChange()">
+            <select id="dateFilter" onchange="handleJobFilterChange()">
+                <option value="">Any Time</option>
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+            </select>
+            <select id="deadlineFilter" onchange="handleJobFilterChange()">
+                <option value="">Any Deadline</option>
+                <option value="urgent">Urgent</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+            <select id="sortFilter" onchange="handleJobFilterChange()">
+                <option value="newest">Newest</option>
+                <option value="budget_high">Highest Budget</option>
+                <option value="deadline">Closest Deadline</option>
+            </select>
         </div>
 
         <!-- Services Section -->
@@ -982,6 +1215,25 @@
         </div>
     </div>
 
+    <!-- Inbox Modal -->
+    <div class="modal" id="inboxModal">
+        <div class="modal-content" style="width: 900px; max-width: 95%; display: flex; padding: 0;">
+            <div class="inbox-modal-sidebar" id="inboxModalList">
+                <!-- Conversations populated dynamically -->
+            </div>
+            <div class="inbox-modal-thread">
+                <div class="modal-header">
+                    <button class="modal-close" onclick="closeModal('inboxModal')">×</button>
+                    <h2 style="margin: 0;">Inbox</h2>
+                    <p style="margin: 0; color: #94a3b8;">Select a conversation to open the messaging window.</p>
+                </div>
+                <div class="modal-body" id="inboxModalBody" style="flex: 1;">
+                    <p style="color: #94a3b8;">No conversation selected.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Post Job Modal -->
     <div class="modal" id="postJobModal">
         <div class="modal-content">
@@ -1027,6 +1279,99 @@
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="closeModal('postJobModal')">Cancel</button>
                         <button type="submit" class="btn-submit">Post Job</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Detail Modal -->
+    <div class="modal" id="jobDetailModal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('jobDetailModal')">×</button>
+                <div class="service-category" id="jobDetailStatus">OPEN</div>
+                <h2 id="jobDetailTitle">Job Title</h2>
+                <p id="jobDetailClient" style="color: #94a3b8; margin-top: 0.5rem;"></p>
+            </div>
+            <div class="modal-body" id="jobDetailBody">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bid Modal -->
+    <div class="modal" id="bidModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('bidModal')">×</button>
+                <h2>Place Bid</h2>
+                <p id="bidJobTitle" style="color: #94a3b8;"></p>
+            </div>
+            <div class="modal-body">
+                <form id="bidForm" onsubmit="submitBid(event)">
+                    <input type="hidden" id="bidJobId">
+                    <div class="form-group">
+                        <label>Bid Amount</label>
+                        <input type="number" id="bidAmount" min="1" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Timeline</label>
+                        <select id="bidTimeline" required>
+                            <option value="asap">ASAP</option>
+                            <option value="1_week">Within 1 week</option>
+                            <option value="2_weeks">Within 2 weeks</option>
+                            <option value="30_days">Within 30 days</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Proposal Message</label>
+                        <textarea id="bidMessage" placeholder="Explain why you are the best fit..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('bidModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Submit Bid</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
+                <h2>Leave a Review</h2>
+            </div>
+            <div class="modal-body">
+                <form id="reviewForm" onsubmit="submitReview(event)">
+                    <input type="hidden" id="reviewServiceId">
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <select id="reviewRating" required>
+                            <option value="">Select rating</option>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Good</option>
+                            <option value="3">3 - Average</option>
+                            <option value="2">2 - Below Average</option>
+                            <option value="1">1 - Poor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Job (optional)</label>
+                        <select id="reviewJobSelect">
+                            <option value="">Select completed job</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Comments</label>
+                        <textarea id="reviewComment" placeholder="Share details about the experience"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('reviewModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Submit Review</button>
                     </div>
                 </form>
             </div>
@@ -1200,106 +1545,320 @@
         }
 
         // Load Jobs
-        async function loadJobs(category = 'all', status = 'all') {
+
+        async function loadJobs(myJobs = false) {
+
             try {
-                let url = '/api/jobs/';
+
+                let url = myJobs ? '/api/jobs/my_jobs/' : '/api/jobs/';
+
                 const params = new URLSearchParams();
-                
-                if (category && category !== 'all') {
-                    params.append('category', category);
+
+
+
+                if (jobFilters.category && jobFilters.category !== 'all') {
+
+                    params.append('category', jobFilters.category);
+
                 }
-                
-                if (status && status !== 'all') {
-                    params.append('status', status);
+
+                if (jobFilters.status && jobFilters.status !== 'all') {
+
+                    params.append('status', jobFilters.status);
+
                 }
-                
-                if (params.toString()) {
-                    url += '?' + params.toString();
+
+                if (jobFilters.minBudget) {
+
+                    params.append('min_budget', jobFilters.minBudget);
+
                 }
-                
+
+                if (jobFilters.maxBudget) {
+
+                    params.append('max_budget', jobFilters.maxBudget);
+
+                }
+
+                if (jobFilters.location) {
+
+                    params.append('location', jobFilters.location);
+
+                }
+
+                if (jobFilters.datePosted) {
+
+                    params.append('date_posted', jobFilters.datePosted);
+
+                }
+
+                if (jobFilters.deadline) {
+
+                    params.append('deadline', jobFilters.deadline);
+
+                }
+
+                if (jobFilters.sort) {
+
+                    params.append('sort', jobFilters.sort);
+
+                }
+
+
+
+                const query = params.toString();
+
+                if (query) {
+
+                    url += (url.includes('?') ? '&' : '?') + query;
+
+                }
+
+
+
                 const response = await fetch(url);
+
                 const data = await response.json();
+
                 servicesData = data.results || data;
-                
-                renderJobs();
+
+                renderJobs(myJobs && currentUser.role === 'client');
+
             } catch (error) {
+
                 console.error('Error loading jobs:', error);
+
             }
+
         }
+
+
 
         // Render Jobs
-        function renderJobs() {
+
+        function renderJobs(isClientView = false) {
+
             const grid = document.getElementById('servicesGrid');
-            
+
             if (servicesData.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; color: #64748b; padding: 3rem;">No jobs found. Be the first to post one!</p>';
+
+                grid.innerHTML = '<p style="text-align: center; color: #64748b; padding: 3rem;">No jobs found.</p>';
+
                 return;
+
             }
-            
+
+            const showBidButton = currentUser.role === 'provider';
+
             grid.innerHTML = servicesData.map(job => {
+
                 const statusColors = {
+
                     'open': { bg: 'rgba(34, 197, 94, 0.15)', text: '#22c55e', label: 'Open' },
+
                     'in_progress': { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', label: 'In Progress' },
+
                     'completed': { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', label: 'Completed' },
+
                     'cancelled': { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', label: 'Cancelled' }
+
                 };
+
                 const statusStyle = statusColors[job.status] || statusColors['open'];
-                
+
+                const deadline = job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No deadline';
+
+                const createdAt = job.created_at ? new Date(job.created_at).toLocaleDateString() : '';
+
+                const postedText = createdAt ? `Posted ${createdAt}` : '';
+
+                let primaryAction = `<button class="btn-primary" onclick="event.stopPropagation(); openJobDetail(${job.id})">View Job</button>`;
+
+                if (showBidButton) {
+
+                    primaryAction = `<button class="btn-primary" onclick="event.stopPropagation(); openBidModal(${job.id})">Place Bid</button>`;
+
+                } else if (isClientView) {
+
+                    primaryAction = `<button class="btn-primary" onclick="event.stopPropagation(); openJobDetail(${job.id})">Manage Job</button>`;
+
+                }
+
+
+
                 return `
-                    <div class="service-card">
+
+                    <div class="service-card" onclick="openJobDetail(${job.id})">
+
                         <div class="service-header" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));">
+
                             <div class="service-category" style="background: ${statusStyle.bg}; color: ${statusStyle.text}; border: 1px solid ${statusStyle.text}">${statusStyle.label}</div>
+
                             <h3>${job.title}</h3>
+
                             <div class="service-provider">
+
                                 <div class="provider-avatar">${job.client_name.split(' ').map(n => n[0]).join('')}</div>
+
                                 <div>
+
                                     <div>${job.client_name}</div>
-                                    <div style="font-size: 0.85em; opacity: 0.9;">📍 ${job.location || 'Zimbabwe'}</div>
+
+                                    <div style="font-size: 0.85em; opacity: 0.9;">dY"? ${job.location || 'Zimbabwe'}</div>
+
                                 </div>
+
                             </div>
+
                         </div>
+
                         <div class="service-body">
+
                             <p class="service-description">${job.description}</p>
+
                             <div class="service-meta">
+
                                 <div style="color: #cbd5e1; font-size: 0.9em;">
-                                    <div>📁 ${job.category.toUpperCase()}</div>
-                                    <div style="margin-top: 0.5rem;">📅 ${job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No deadline'}</div>
+
+                                    <div>dY"? ${job.category.toUpperCase()}</div>
+
+                                    <div style="margin-top: 0.5rem;">dY". ${deadline}</div>
+
+                                    <div style="margin-top: 0.5rem; font-size: 0.8em; opacity: 0.7;">${postedText}</div>
+
                                 </div>
+
                                 <div class="price">$${job.budget}</div>
+
                             </div>
+
                         </div>
+
                         <div class="service-footer">
-                            <button class="btn-primary" onclick="event.stopPropagation(); alert('Bid on this job feature coming soon!')">Bid Now</button>
-                            <button class="btn-secondary" onclick="event.stopPropagation();">View More</button>
+
+                            ${primaryAction}
+
+                            <button class="btn-secondary" onclick="event.stopPropagation(); openJobDetail(${job.id})">View Details</button>
+
                         </div>
+
                     </div>
+
                 `;
+
             }).join('');
+
         }
 
-        function filterServices(category) {
-            currentFilter = category;
-            
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            if (currentUser.role === 'provider') {
-                loadServices(category);
-            } else {
-                loadJobs(category);
+
+
+        function handleJobFilterChange() {
+
+            jobFilters.status = document.getElementById('statusFilter').value;
+
+            jobFilters.minBudget = document.getElementById('minBudgetFilter').value;
+
+            jobFilters.maxBudget = document.getElementById('maxBudgetFilter').value;
+
+            jobFilters.location = document.getElementById('locationFilter').value;
+
+            jobFilters.datePosted = document.getElementById('dateFilter').value;
+
+            jobFilters.deadline = document.getElementById('deadlineFilter').value;
+
+            jobFilters.sort = document.getElementById('sortFilter').value;
+
+            loadJobs(currentUser.role === 'client' && clientContentMode === 'jobs');
+
+        }
+
+        function toggleClientView(event) {
+
+            if (event) {
+
+                event.preventDefault();
+
             }
+
+            clientContentMode = clientContentMode === 'services' ? 'jobs' : 'services';
+
+            updateClientToggle();
+
+            updateUserInterface();
+
+            loadAndRenderContent();
+
+        }
+
+
+
+        function updateClientToggle() {
+
+            const toggleBtn = document.getElementById('clientViewToggle');
+
+            if (!toggleBtn) return;
+
+            if (currentUser.role === 'client') {
+
+                toggleBtn.style.display = 'inline-flex';
+
+                toggleBtn.textContent = clientContentMode === 'services' ? 'View My Jobs' : 'View Services';
+
+            } else {
+
+                toggleBtn.style.display = 'none';
+
+            }
+
+        }
+
+
+
+        function filterServices(category) {
+
+            currentFilter = category;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+
+            if (window.event && window.event.target) {
+
+                window.event.target.classList.add('active');
+
+            }
+
+
+
+            if (currentUser.role === 'client' && clientContentMode === 'services') {
+
+                loadServices(category, document.getElementById('searchInput').value);
+
+            } else {
+
+                jobFilters.category = category;
+
+                handleJobFilterChange();
+
+            }
+
         }
 
         // Search Services
         function searchServices() {
+
             const query = document.getElementById('searchInput').value;
-            if (currentUser.role === 'provider') {
+
+            if (currentUser.role === 'client' && clientContentMode === 'services') {
+
                 loadServices(currentFilter, query);
+
             } else {
-                loadJobs(currentFilter);
+
+                jobFilters.location = query;
+
+                handleJobFilterChange();
+
             }
+
         }
 
         // Open Service Detail
