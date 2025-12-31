@@ -1066,8 +1066,8 @@
         // Initialize
         window.onload = async function() {
             await loadStats();
-            await loadServices();
             updateUserInterface();
+            await loadAndRenderContent();
         };
 
         // Load Stats
@@ -1119,6 +1119,15 @@
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load and Render Content based on role
+        async function loadAndRenderContent() {
+            if (currentUser.role === 'provider') {
+                await loadServices();
+            } else {
+                await loadJobs();
             }
         }
 
@@ -1190,7 +1199,84 @@
             `).join('');
         }
 
-        // Filter Services
+        // Load Jobs
+        async function loadJobs(category = 'all', status = 'all') {
+            try {
+                let url = '/api/jobs/';
+                const params = new URLSearchParams();
+                
+                if (category && category !== 'all') {
+                    params.append('category', category);
+                }
+                
+                if (status && status !== 'all') {
+                    params.append('status', status);
+                }
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                servicesData = data.results || data;
+                
+                renderJobs();
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+            }
+        }
+
+        // Render Jobs
+        function renderJobs() {
+            const grid = document.getElementById('servicesGrid');
+            
+            if (servicesData.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #64748b; padding: 3rem;">No jobs found. Be the first to post one!</p>';
+                return;
+            }
+            
+            grid.innerHTML = servicesData.map(job => {
+                const statusColors = {
+                    'open': { bg: 'rgba(34, 197, 94, 0.15)', text: '#22c55e', label: 'Open' },
+                    'in_progress': { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', label: 'In Progress' },
+                    'completed': { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', label: 'Completed' },
+                    'cancelled': { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', label: 'Cancelled' }
+                };
+                const statusStyle = statusColors[job.status] || statusColors['open'];
+                
+                return `
+                    <div class="service-card">
+                        <div class="service-header" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));">
+                            <div class="service-category" style="background: ${statusStyle.bg}; color: ${statusStyle.text}; border: 1px solid ${statusStyle.text}">${statusStyle.label}</div>
+                            <h3>${job.title}</h3>
+                            <div class="service-provider">
+                                <div class="provider-avatar">${job.client_name.split(' ').map(n => n[0]).join('')}</div>
+                                <div>
+                                    <div>${job.client_name}</div>
+                                    <div style="font-size: 0.85em; opacity: 0.9;">📍 ${job.location || 'Zimbabwe'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="service-body">
+                            <p class="service-description">${job.description}</p>
+                            <div class="service-meta">
+                                <div style="color: #cbd5e1; font-size: 0.9em;">
+                                    <div>📁 ${job.category.toUpperCase()}</div>
+                                    <div style="margin-top: 0.5rem;">📅 ${job.deadline ? new Date(job.deadline).toLocaleDateString() : 'No deadline'}</div>
+                                </div>
+                                <div class="price">$${job.budget}</div>
+                            </div>
+                        </div>
+                        <div class="service-footer">
+                            <button class="btn-primary" onclick="event.stopPropagation(); alert('Bid on this job feature coming soon!')">Bid Now</button>
+                            <button class="btn-secondary" onclick="event.stopPropagation();">View More</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function filterServices(category) {
             currentFilter = category;
             
@@ -1199,13 +1285,21 @@
             });
             event.target.classList.add('active');
             
-            loadServices(category);
+            if (currentUser.role === 'provider') {
+                loadServices(category);
+            } else {
+                loadJobs(category);
+            }
         }
 
         // Search Services
         function searchServices() {
             const query = document.getElementById('searchInput').value;
-            loadServices(currentFilter, query);
+            if (currentUser.role === 'provider') {
+                loadServices(currentFilter, query);
+            } else {
+                loadJobs(currentFilter);
+            }
         }
 
         // Open Service Detail
@@ -1281,7 +1375,7 @@
                     currentUser.role = newRole;
                     updateUserInterface();
                     await loadStats();
-                    location.reload();  // Reload to update UI
+                    await loadAndRenderContent();  // Load appropriate content for new role
                 }
             } catch (error) {
                 console.error('Error toggling role:', error);
