@@ -1334,11 +1334,19 @@
             event.preventDefault();
             
             const formData = new FormData(event.target);
+            const budget = parseFloat(formData.get('budget'));
+            
+            // Validate budget
+            if (isNaN(budget) || budget <= 0) {
+                alert('Please enter a valid budget amount');
+                return;
+            }
+            
             const data = {
                 title: formData.get('title'),
                 category: formData.get('category'),
                 description: formData.get('description'),
-                budget: formData.get('budget'),
+                budget: budget.toFixed(2),
                 location: formData.get('location'),
                 deadline: formData.get('deadline') || null
             };
@@ -1353,13 +1361,23 @@
                     body: JSON.stringify(data)
                 });
                 
+                const responseData = await response.json();
+                
                 if (response.ok) {
                     alert('Job posted successfully!');
                     closeModal('postJobModal');
                     document.getElementById('postJobForm').reset();
                     await loadStats();
                 } else {
-                    alert('Error posting job. Please try again.');
+                    console.error('Job posting error response:', responseData);
+                    let errorMessage = 'Error posting job. Please try again.';
+                    if (typeof responseData === 'object') {
+                        const errors = Object.entries(responseData)
+                            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val[0] : val}`)
+                            .join('\n');
+                        errorMessage = errors || errorMessage;
+                    }
+                    alert(errorMessage);
                 }
             } catch (error) {
                 console.error('Error posting job:', error);
