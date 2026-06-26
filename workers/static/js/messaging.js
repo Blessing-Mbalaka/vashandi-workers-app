@@ -1,7 +1,6 @@
 /**
  * Messaging Module
- * Reusable messaging interface for contacting providers/workers
- * Can be used across the application
+ * Reusable messaging interface for contacting providers/workers.
  */
 
 class MessagingModule {
@@ -13,30 +12,21 @@ class MessagingModule {
             onError: options.onError || (() => {}),
             ...options
         };
-        
+
         this.currentConversation = null;
         this.messages = [];
         this.isLoading = false;
         this.refreshInterval = null;
         this.lastMessageId = null;
-        
-        // Log initialization
-        console.log('[MessagingModule] Initialized with CSRF token:', this.options.csrfToken ? 'Present' : 'Missing');
-        if (!this.options.csrfToken) {
-            console.warn('[MessagingModule] Warning: CSRF token not found. This may cause 403 errors.');
-        }
     }
 
-    /**
-     * Get CSRF token from cookies
-     */
     getCsrfToken() {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
-                if (cookie.substring(0, 'csrftoken='.length + 1) === ('csrftoken=')) {
+                if (cookie.substring(0, 'csrftoken='.length + 1) === 'csrftoken=') {
                     cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length + 1));
                     break;
                 }
@@ -45,9 +35,6 @@ class MessagingModule {
         return cookieValue;
     }
 
-    /**
-     * Open messaging modal to contact a provider
-     */
     async openContactModal(serviceId, serviceTitle, providerId, providerName, providerInitials) {
         this.setConversation({
             serviceId,
@@ -85,56 +72,55 @@ class MessagingModule {
         this.lastMessageId = null;
     }
 
-    /**
-     * Create the messaging modal HTML
-     */
     createModal() {
-        let modal = document.getElementById('messagingModal');
-        
-        if (modal) {
-            modal.remove();
+        const existingModal = document.getElementById('messagingModal');
+        if (existingModal) {
+            existingModal.remove();
         }
+
         const name = this.currentConversation?.userName || 'Conversation';
         const initials = this.currentConversation?.userInitials || '??';
         const subtitle = this.currentConversation?.contextTitle || 'Private conversation';
+        const firstMessagePrompt = `This is the start of your conversation with ${name}. Type your message below and press Send.`;
 
         const modalHTML = `
             <div class="modal" id="messagingModal">
-                <div class="modal-content" style="width: 600px; max-height: 800px; display: flex; flex-direction: column;">
+                <div class="modal-content" style="width: 600px; max-width: 96%; max-height: 88vh; display: flex; flex-direction: column; background: #fffdf8; color: #17130d;">
                     <div class="modal-header">
-                        <button class="modal-close" onclick="messagingModule.closeModal()">A-</button>
+                        <button class="modal-close" onclick="messagingModule.closeModal()">&times;</button>
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 1.2em;">
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(145deg, #c7961a, #9c7310); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 1.1em;">
                                 ${initials}
                             </div>
                             <div>
                                 <h2 style="margin: 0; margin-bottom: 0.3rem;">${name}</h2>
-                                <p style="margin: 0; color: #94a3b8; font-size: 0.9em;">${subtitle}</p>
+                                <p style="margin: 0; color: #746754; font-size: 0.9em;">${subtitle}</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; background: rgba(15, 23, 42, 0.5);">
+                    <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; background: #f8f2e6;">
                         <div id="messagesContainer" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <p style="text-align: center; color: #64748b;">No messages yet. Start the conversation!</p>
+                            <div style="text-align: center; color: #746754; background: rgba(255, 255, 255, 0.72); border: 1px dashed rgba(199, 150, 26, 0.4); border-radius: 12px; padding: 1rem 1.25rem;">
+                                <p style="margin: 0; font-weight: 700; color: #17130d;">No messages yet</p>
+                                <p style="margin: 0.5rem 0 0;">${firstMessagePrompt}</p>
+                            </div>
                         </div>
                     </div>
-
-                    <div style="padding: 1.5rem; border-top: 1px solid rgba(51, 65, 85, 0.5);">
+                    <div style="padding: 1.5rem; border-top: 1px solid rgba(199, 150, 26, 0.22); background: rgba(255, 255, 255, 0.92);">
                         <form id="messageForm" onsubmit="messagingModule.sendMessage(event)" style="display: flex; gap: 10px;">
-                            <input 
-                                type="text" 
-                                id="messageInput" 
-                                placeholder="Type your message..." 
-                                style="flex: 1; padding: 12px; border: 2px solid rgba(51, 65, 85, 0.8); background: rgba(15, 23, 42, 0.6); color: #f1f5f9; border-radius: 6px; font-size: 1em; font-family: inherit; transition: all 0.3s;"
-                                onkeyup="this.style.borderColor = '#3b82f6'"
-                                onblur="this.style.borderColor = 'rgba(51, 65, 85, 0.8)'"
+                            <input
+                                type="text"
+                                id="messageInput"
+                                placeholder="Write your first message here..."
+                                style="flex: 1; padding: 12px; border: 1px solid rgba(199, 150, 26, 0.34); background: #ffffff; color: #17130d; border-radius: 12px; font-size: 1em; font-family: inherit; transition: all 0.3s;"
+                                onkeyup="this.style.borderColor = '#c7961a'"
+                                onblur="this.style.borderColor = 'rgba(199, 150, 26, 0.34)'"
                             >
-                            <button 
-                                type="submit" 
-                                style="padding: 12px 24px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
-                                onmouseover="this.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)'"
-                                onmouseout="this.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)'"
+                            <button
+                                type="submit"
+                                style="padding: 12px 24px; background: linear-gradient(145deg, #c7961a, #9c7310); color: #17130d; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(199, 150, 26, 0.24);"
+                                onmouseover="this.style.boxShadow = '0 6px 20px rgba(199, 150, 26, 0.35)'"
+                                onmouseout="this.style.boxShadow = '0 4px 12px rgba(199, 150, 26, 0.24)'"
                             >
                                 Send
                             </button>
@@ -146,12 +132,15 @@ class MessagingModule {
 
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         document.getElementById('messagingModal').classList.add('show');
+        setTimeout(() => {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.focus();
+            }
+        }, 50);
         this.startAutoRefresh();
     }
 
-    /**
-     * Load existing messages
-     */
     async loadMessages(isAutoRefresh = false) {
         if (!this.currentConversation || !this.currentConversation.userId) {
             this.showErrorAlert('Select a conversation before loading messages.');
@@ -160,6 +149,7 @@ class MessagingModule {
 
         this.isLoading = true;
         const previousLastId = this.lastMessageId;
+
         try {
             const params = new URLSearchParams();
             params.append('conversation_with', this.currentConversation.userId);
@@ -202,9 +192,6 @@ class MessagingModule {
         }
     }
 
-    /**
-     * Send a new message
-     */
     async sendMessage(event) {
         event.preventDefault();
 
@@ -217,7 +204,7 @@ class MessagingModule {
         const content = messageInput.value.trim();
 
         if (!content) {
-            this.showErrorAlert('Please enter a message');
+            this.showErrorAlert('Please enter a message.');
             return;
         }
 
@@ -232,13 +219,14 @@ class MessagingModule {
             recipient: this.currentConversation.userId,
             content: content
         };
+
         if (this.currentConversation.serviceId) {
             messageData.service = this.currentConversation.serviceId;
         }
         if (this.currentConversation.jobId) {
             messageData.job = this.currentConversation.jobId;
         }
-        
+
         try {
             const response = await fetch(this.options.apiEndpoint, {
                 method: 'POST',
@@ -252,14 +240,17 @@ class MessagingModule {
             if (response.ok) {
                 messageInput.value = '';
                 await this.loadMessages();
-                this.showSuccessAlert('Message sent successfully!');
+                this.showSuccessAlert('Message sent successfully.');
                 const container = document.getElementById('messagesContainer');
                 if (container?.parentElement) {
                     container.parentElement.scrollTop = container.parentElement.scrollHeight;
                 }
+                if (typeof refreshDashboardAlerts === 'function') {
+                    refreshDashboardAlerts();
+                }
             } else {
                 const errorData = await response.json();
-                const errorMessage = errorData.error || 'Failed to send message';
+                const errorMessage = errorData.error || 'Failed to send message.';
                 this.showDetailedError(response.status, errorMessage);
                 this.options.onError(errorMessage);
             }
@@ -290,34 +281,31 @@ class MessagingModule {
 
     showNewMessageIndicator(senderName) {
         this.showSuccessAlert(`New message from ${senderName}`);
+        if (typeof refreshDashboardAlerts === 'function') {
+            refreshDashboardAlerts();
+        }
     }
 
-    /**
-     * Show a detailed error alert with helpful information
-     */
     showDetailedError(statusCode, message) {
         let fullMessage = message;
-        
+
         if (statusCode === 401) {
-            fullMessage = `⚠️ Authentication Error\n\n${message}\n\nPlease log in again.`;
+            fullMessage = `Authentication Error\n\n${message}\n\nPlease log in again.`;
         } else if (statusCode === 403) {
-            fullMessage = `🔒 Permission Denied\n\n${message}\n\nYou may not have permission to send this message.`;
+            fullMessage = `Permission Denied\n\n${message}\n\nYou may not have permission to send this message.`;
         } else if (statusCode === 404) {
-            fullMessage = `❌ Not Found\n\n${message}\n\nPlease refresh the page and try again.`;
+            fullMessage = `Not Found\n\n${message}\n\nPlease refresh the page and try again.`;
         } else if (statusCode === 400) {
-            fullMessage = `⚠️ Invalid Request\n\n${message}\n\nPlease check your input and try again.`;
+            fullMessage = `Invalid Request\n\n${message}\n\nPlease check your input and try again.`;
         } else if (statusCode >= 500) {
-            fullMessage = `⛔ Server Error\n\n${message}\n\nPlease try again later.`;
+            fullMessage = `Server Error\n\n${message}\n\nPlease try again later.`;
         }
-        
+
         this.showErrorAlert(fullMessage);
     }
 
-    /**
-     * Show success alert with styling
-     */
     showSuccessAlert(message) {
-        const alertId = 'messagingAlert_' + Date.now();
+        const alertId = `messagingAlert_${Date.now()}`;
         const alertHTML = `
             <div id="${alertId}" style="
                 position: fixed;
@@ -326,8 +314,8 @@ class MessagingModule {
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 color: white;
                 padding: 16px 24px;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
                 z-index: 10000;
                 max-width: 400px;
                 word-wrap: break-word;
@@ -335,12 +323,12 @@ class MessagingModule {
                 font-size: 0.95em;
                 border-left: 4px solid #10b981;
             ">
-                ✓ ${message}
+                ${message}
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', alertHTML);
-        
+
         setTimeout(() => {
             const element = document.getElementById(alertId);
             if (element) {
@@ -351,11 +339,8 @@ class MessagingModule {
         }, 4000);
     }
 
-    /**
-     * Show error alert with styling
-     */
     showErrorAlert(message) {
-        const alertId = 'messagingAlert_' + Date.now();
+        const alertId = `messagingAlert_${Date.now()}`;
         const alertHTML = `
             <div id="${alertId}" style="
                 position: fixed;
@@ -364,8 +349,8 @@ class MessagingModule {
                 background: linear-gradient(135deg, #ef4444, #dc2626);
                 color: white;
                 padding: 16px 24px;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
                 z-index: 10000;
                 max-width: 400px;
                 word-wrap: break-word;
@@ -373,12 +358,12 @@ class MessagingModule {
                 font-size: 0.95em;
                 border-left: 4px solid #b91c1c;
             ">
-                ✕ ${message}
+                ${message}
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', alertHTML);
-        
+
         setTimeout(() => {
             const element = document.getElementById(alertId);
             if (element) {
@@ -389,24 +374,27 @@ class MessagingModule {
         }, 5000);
     }
 
-    /**
-     * Render messages in the modal
-     */
     renderMessages() {
         const container = document.getElementById('messagesContainer');
+        const name = this.currentConversation?.userName || 'this provider';
 
         if (this.messages.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #64748b;">No messages yet. Start the conversation!</p>';
+            container.innerHTML = `
+                <div style="text-align: center; color: #746754; background: rgba(255, 255, 255, 0.72); border: 1px dashed rgba(199, 150, 26, 0.4); border-radius: 12px; padding: 1rem 1.25rem;">
+                    <p style="margin: 0; font-weight: 700; color: #17130d;">No messages yet</p>
+                    <p style="margin: 0.5rem 0 0;">This is the start of your conversation with ${name}. Type your message below and press Send.</p>
+                </div>
+            `;
             return;
         }
 
-        container.innerHTML = this.messages.map(msg => {
+        container.innerHTML = this.messages.map((msg) => {
             const isOwn = msg.is_sent_by_user !== undefined ? msg.is_sent_by_user : true;
             const timestamp = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
             return `
                 <div style="display: flex; ${isOwn ? 'justify-content: flex-end' : 'justify-content: flex-start'};">
-                    <div style="max-width: 80%; background: ${isOwn ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'rgba(30, 41, 59, 0.8)'}; color: ${isOwn ? 'white' : '#cbd5e1'}; padding: 12px 16px; border-radius: 12px; word-wrap: break-word; border: 1px solid ${isOwn ? 'rgba(59, 130, 246, 0.5)' : 'rgba(51, 65, 85, 0.5)'};">
+                    <div style="max-width: 80%; background: ${isOwn ? 'linear-gradient(145deg, #c7961a, #9c7310)' : '#ffffff'}; color: #17130d; padding: 12px 16px; border-radius: 12px; word-wrap: break-word; border: 1px solid ${isOwn ? 'rgba(199, 150, 26, 0.3)' : 'rgba(199, 150, 26, 0.18)'}; box-shadow: 0 10px 24px rgba(81, 60, 31, 0.08);">
                         <p style="margin: 0; margin-bottom: 0.5rem; line-height: 1.5;">${this.escapeHtml(msg.content)}</p>
                         <p style="margin: 0; font-size: 0.75em; opacity: 0.7;">${timestamp}</p>
                     </div>
@@ -414,25 +402,18 @@ class MessagingModule {
             `;
         }).join('');
 
-        // Scroll to bottom
         const modalBody = container.parentElement;
         setTimeout(() => {
             modalBody.scrollTop = modalBody.scrollHeight;
         }, 100);
     }
 
-    /**
-     * Escape HTML to prevent XSS
-     */
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
-    /**
-     * Close the messaging modal
-     */
     closeModal() {
         const modal = document.getElementById('messagingModal');
         if (modal) {
@@ -446,10 +427,8 @@ class MessagingModule {
     }
 }
 
-// Global instance
 let messagingModule;
 
-// Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         messagingModule = new MessagingModule();

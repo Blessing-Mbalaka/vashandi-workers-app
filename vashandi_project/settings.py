@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-bnbzhw*c38@zx1cdc4n5@1osq$nel&ujqj^-!7i6ie^6f_t!77
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 
 # Application definition
@@ -147,3 +148,17 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development only
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Email configuration
+# TEMPORARY DEMO CHANGE - Real email sending for demo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'stemappza@gmail.com'
+EMAIL_HOST_PASSWORD = 'ddtz gltz vscj loab'
+DEFAULT_FROM_EMAIL = 'STEM LMS <stemappza@gmail.com>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+SEND_WELCOME_EMAILS = True
+SEND_MESSAGE_EMAILS = True

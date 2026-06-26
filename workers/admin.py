@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Service, Job, Review, Message, Bid, Notification
+from .models import User, Service, Job, Review, Message, Bid, Notification, TradeCategory
 
 
 @admin.register(User)
@@ -15,18 +15,27 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+@admin.register(TradeCategory)
+class TradeCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'parent', 'slug', 'sort_order', 'is_active']
+    list_filter = ['is_active', 'parent']
+    search_fields = ['name', 'slug', 'parent__name']
+    ordering = ['parent__name', 'sort_order', 'name']
+    prepopulated_fields = {'slug': ('name',)}
+
+
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ['title', 'provider', 'category', 'price_per_hour', 'is_active', 'average_rating', 'created_at']
-    list_filter = ['category', 'is_active', 'created_at']
+    list_display = ['title', 'provider', 'category_ref', 'category', 'price_per_hour', 'is_active', 'average_rating', 'created_at']
+    list_filter = ['category_ref', 'is_active', 'created_at']
     search_fields = ['title', 'description', 'provider__username', 'provider__first_name', 'provider__last_name']
     readonly_fields = ['created_at', 'updated_at']
 
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ['title', 'client', 'category', 'budget', 'status', 'created_at']
-    list_filter = ['category', 'status', 'created_at']
+    list_display = ['title', 'client', 'category_ref', 'category', 'budget', 'status', 'created_at']
+    list_filter = ['category_ref', 'status', 'created_at']
     search_fields = ['title', 'description', 'client__username']
     readonly_fields = ['created_at', 'updated_at']
 

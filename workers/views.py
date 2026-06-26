@@ -1,9 +1,10 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Max, Min, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -14,15 +15,51 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from .email_utils import (
+    send_bid_email as send_bid_email_notification,
+    send_invoice_email as send_invoice_email_notification,
+    send_message_email as send_message_email_notification,
+    send_review_email as send_review_email_notification,
+    send_rfq_email as send_rfq_email_notification,
+    send_status_change_email as send_status_change_email_notification,
+    send_welcome_email as send_welcome_email_notification,
+)
 from .message import MessageManager
-from .models import Bid, Job, Message, Notification, Review, Service
+from .models import Bid, Invoice, Job, Message, Notification, RFQ, Review, Service, TradeCategory
 from .serializers import (
     UserSerializer, UserRegistrationSerializer, ServiceSerializer,
     ServiceListSerializer, JobSerializer, ReviewSerializer, MessageSerializer,
-    BidSerializer, NotificationSerializer
+    BidSerializer, InvoiceSerializer, NotificationSerializer, RFQSerializer,
+    TradeCategorySerializer,
 )
 
 User = get_user_model()
+
+
+def apply_category_filters(queryset, params):
+    category_id = params.get('category_id')
+    trade_id = params.get('trade_id')
+    category_value = params.get('category')
+
+    if category_id:
+        return queryset.filter(category_ref_id=category_id)
+
+    if trade_id:
+        return queryset.filter(Q(category_ref_id=trade_id) | Q(category_ref__parent_id=trade_id))
+
+    if category_value and category_value != 'all':
+        category_obj = TradeCategory.objects.filter(Q(slug=category_value) | Q(name__iexact=category_value)).first()
+        if category_obj:
+            if category_obj.parent_id:
+                return queryset.filter(Q(category_ref=category_obj) | Q(category=category_obj.slug))
+            return queryset.filter(
+                Q(category_ref=category_obj) |
+                Q(category_ref__parent=category_obj) |
+                Q(category=category_obj.slug)
+            )
+        return queryset.filter(category=category_value)
+
+    return queryset
 
 
 def create_notification(*, recipient, actor, notification_type, title, description, related_object=None):
@@ -36,6 +73,22 @@ def create_notification(*, recipient, actor, notification_type, title, descripti
         related_object_id=getattr(related_object, 'id', None),
         related_model=related_object.__class__.__name__ if related_object else ''
     )
+
+
+def send_welcome_email(user):
+    return send_welcome_email_notification(user)
+
+
+def send_message_email(message_obj):
+    return send_message_email_notification(message_obj)
+
+
+def send_rfq_email(rfq):
+    return send_rfq_email_notification(rfq)
+
+
+def send_invoice_email(invoice):
+    return send_invoice_email_notification(invoice)
 
 
 # Template Views
@@ -72,10 +125,12 @@ def register_api(request):
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        login(request, user)
+        email_sent, email_error = send_welcome_email(user)
         return Response({
-            'message': 'Registration successful',
-            'user': UserSerializer(user).data
+            'message': 'Registration successful. Please log in with your new password.',
+            'user': UserSerializer(user).data,
+            'email_sent': email_sent,
+            'email_error': email_error,
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -137,7 +192,7 @@ def toggle_role_api(request):
 
 class ServiceViewSet(viewsets.ModelViewSet):
     """ViewSet for Service CRUD operations"""
-    queryset = Service.objects.filter(is_active=True)
+    queryset = Service.objects.select_related('provider', 'category_ref', 'category_ref__parent').filter(is_active=True)
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_serializer_class(self):
@@ -147,14 +202,11 @@ class ServiceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        category = self.request.query_params.get('category')
         search = self.request.query_params.get('search')
         location = self.request.query_params.get('location')
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
-        
-        if category and category != 'all':
-            queryset = queryset.filter(category=category)
+        queryset = apply_category_filters(queryset, self.request.query_params)
         
         if search:
             queryset = queryset.filter(
@@ -181,7 +233,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def my_services(self, request):
         """Get current user's services"""
-        services = self.queryset.filter(provider=request.user)
+        services = self.get_queryset().filter(provider=request.user)
         serializer = self.get_serializer(services, many=True)
         return Response(serializer.data)
     
@@ -210,6 +262,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
             description=f'{request.user.get_full_name()} sent you a message about {service.title}.',
             related_object=message
         )
+        send_message_email(message)
         
         return Response({
             'message': 'Message sent successfully',
@@ -219,15 +272,15 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
 class JobViewSet(viewsets.ModelViewSet):
     """ViewSet for Job CRUD operations"""
-    queryset = Job.objects.all()
+    queryset = Job.objects.select_related('client', 'assigned_provider', 'service', 'category_ref', 'category_ref__parent').all()
     serializer_class = JobSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
         queryset = super().get_queryset()
         params = self.request.query_params
-        category = params.get('category')
         status_filter = params.get('status')
+        service_id = params.get('service')
         min_budget = params.get('min_budget')
         max_budget = params.get('max_budget')
         location = params.get('location')
@@ -235,11 +288,13 @@ class JobViewSet(viewsets.ModelViewSet):
         deadline_filter = params.get('deadline')
         sort = params.get('sort')
         
-        if category and category != 'all':
-            queryset = queryset.filter(category=category)
+        queryset = apply_category_filters(queryset, params)
         
         if status_filter and status_filter != 'all':
             queryset = queryset.filter(status=status_filter)
+
+        if service_id:
+            queryset = queryset.filter(service_id=service_id)
 
         if min_budget:
             queryset = queryset.filter(budget__gte=min_budget)
@@ -290,14 +345,14 @@ class JobViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def my_jobs(self, request):
         """Get current user's posted jobs"""
-        jobs = self.queryset.filter(client=request.user)
+        jobs = self.get_queryset().filter(client=request.user)
         serializer = self.get_serializer(jobs, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
     def assigned_jobs(self, request):
         """Get jobs assigned to current user (as provider)"""
-        jobs = self.queryset.filter(assigned_provider=request.user)
+        jobs = self.get_queryset().filter(assigned_provider=request.user)
         serializer = self.get_serializer(jobs, many=True)
         return Response(serializer.data)
 
@@ -353,6 +408,7 @@ class JobViewSet(viewsets.ModelViewSet):
                     description=description,
                     related_object=job
                 )
+                send_status_change_email_notification(job, request.user, note)
 
         serializer = self.get_serializer(job)
         return Response(serializer.data)
@@ -394,6 +450,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             description=f'{self.request.user.get_full_name()} left a {review.rating}-star review.',
             related_object=review
         )
+        send_review_email_notification(review)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -526,6 +583,7 @@ class MessageViewSet(viewsets.ModelViewSet):
                 description=f'{request.user.get_full_name()} sent you a new message.',
                 related_object=message
             )
+            send_message_email(message)
             serializer = self.get_serializer(message)
             return Response(
                 serializer.data,
@@ -644,6 +702,17 @@ class BidViewSet(viewsets.ModelViewSet):
             description=f'{user.get_full_name()} placed a bid for ${bid.amount}.',
             related_object=bid
         )
+        send_bid_email_notification(
+            recipient=job.client,
+            actor=user,
+            subject=f'New bid on {job.title}',
+            heading='New Bid Received',
+            intro=f'{user.get_full_name() or user.username} placed a new bid on your job.',
+            job_title=job.title,
+            amount=bid.amount,
+            extra_label='Proposal Timeline',
+            extra_value=bid.get_timeline_display(),
+        )
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
@@ -668,8 +737,138 @@ class BidViewSet(viewsets.ModelViewSet):
             description=f'Your bid for {bid.job.title} was accepted.',
             related_object=bid.job
         )
+        send_bid_email_notification(
+            recipient=bid.provider,
+            actor=request.user,
+            subject=f'Bid accepted for {bid.job.title}',
+            heading='Bid Accepted',
+            intro=f'{request.user.get_full_name() or request.user.username} accepted your bid.',
+            job_title=bid.job.title,
+            amount=bid.amount,
+            extra_label='Status',
+            extra_value='Accepted',
+        )
         serializer = self.get_serializer(bid)
         return Response(serializer.data)
+
+
+class RFQViewSet(viewsets.ModelViewSet):
+    """ViewSet for RFQ operations"""
+    queryset = RFQ.objects.select_related('client', 'provider', 'service', 'service__provider')
+    serializer_class = RFQSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(
+            Q(client=self.request.user) | Q(provider=self.request.user)
+        )
+        direction = self.request.query_params.get('direction')
+        status_filter = self.request.query_params.get('status')
+
+        if direction == 'sent':
+            queryset = queryset.filter(client=self.request.user)
+        elif direction == 'received':
+            queryset = queryset.filter(provider=self.request.user)
+
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.current_role not in {'client', 'both'}:
+            raise PermissionDenied('Only clients can submit RFQs.')
+
+        service = serializer.validated_data['service']
+        rfq = serializer.save(client=user, provider=service.provider)
+        create_notification(
+            recipient=service.provider,
+            actor=user,
+            notification_type=Notification.RFQ,
+            title=f'New RFQ for {service.title}',
+            description=f'{user.get_full_name()} sent an RFQ: {rfq.title}.',
+            related_object=rfq
+        )
+        send_rfq_email(rfq)
+
+    @action(detail=True, methods=['post'])
+    def mark_reviewed(self, request, pk=None):
+        rfq = self.get_object()
+        if rfq.provider != request.user:
+            return Response({'error': 'Only the provider can review this RFQ.'}, status=status.HTTP_403_FORBIDDEN)
+        rfq.status = 'reviewed'
+        rfq.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(rfq).data)
+
+
+class InvoiceViewSet(viewsets.ModelViewSet):
+    """ViewSet for provider invoices"""
+    queryset = Invoice.objects.select_related('provider', 'client', 'rfq', 'service')
+    serializer_class = InvoiceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(
+            Q(provider=self.request.user) | Q(client=self.request.user)
+        )
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        return queryset
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.current_role not in {'provider', 'both'}:
+            raise PermissionDenied('Only providers can create invoices.')
+
+        rfq = serializer.validated_data.get('rfq')
+        if not rfq:
+            raise PermissionDenied('Invoices must be linked to an RFQ.')
+        if rfq.provider != user:
+            raise PermissionDenied('You can only invoice RFQs assigned to you.')
+
+        invoice = serializer.save(
+            provider=user,
+            client=rfq.client,
+            service=rfq.service,
+            status='sent'
+        )
+        rfq.status = 'quoted'
+        rfq.save(update_fields=['status', 'updated_at'])
+        create_notification(
+            recipient=rfq.client,
+            actor=user,
+            notification_type=Notification.INVOICE,
+            title=f'New invoice for {rfq.title}',
+            description=f'{user.get_full_name()} sent you an invoice for ${invoice.total_amount}.',
+            related_object=invoice
+        )
+        send_invoice_email(invoice)
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        invoice = self.get_object()
+        if invoice.client != request.user:
+            return Response({'error': 'Only the client can accept this invoice.'}, status=status.HTTP_403_FORBIDDEN)
+        invoice.status = 'accepted'
+        invoice.save(update_fields=['status', 'updated_at'])
+        if invoice.rfq:
+            invoice.rfq.status = 'accepted'
+            invoice.rfq.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(invoice).data)
+
+    @action(detail=True, methods=['post'])
+    def mark_paid(self, request, pk=None):
+        invoice = self.get_object()
+        if invoice.client != request.user:
+            return Response({'error': 'Only the client can mark this invoice as paid.'}, status=status.HTTP_403_FORBIDDEN)
+        invoice.status = 'paid'
+        invoice.save(update_fields=['status', 'updated_at'])
+        if invoice.rfq:
+            invoice.rfq.status = 'closed'
+            invoice.rfq.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(invoice).data)
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
@@ -716,8 +915,33 @@ class NotificationViewSet(viewsets.ModelViewSet):
             description=f'Your bid for {bid.job.title} was rejected.',
             related_object=bid.job
         )
+        send_bid_email_notification(
+            recipient=bid.provider,
+            actor=request.user,
+            subject=f'Bid update for {bid.job.title}',
+            heading='Bid Rejected',
+            intro=f'{request.user.get_full_name() or request.user.username} rejected your bid.',
+            job_title=bid.job.title,
+            amount=bid.amount,
+            extra_label='Status',
+            extra_value='Rejected',
+        )
         serializer = self.get_serializer(bid)
         return Response(serializer.data)
+
+
+class TradeCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only category tree for dashboard filters and forms."""
+
+    serializer_class = TradeCategorySerializer
+    permission_classes = [permissions.AllowAny]
+    queryset = TradeCategory.objects.filter(is_active=True).prefetch_related('children')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == 'list':
+            queryset = queryset.filter(parent__isnull=True)
+        return queryset.order_by('sort_order', 'name')
 
     @action(detail=True, methods=['post'])
     def withdraw(self, request, pk=None):
@@ -737,8 +961,80 @@ class NotificationViewSet(viewsets.ModelViewSet):
             description=f'{request.user.get_full_name()} withdrew their bid on {bid.job.title}.',
             related_object=bid.job
         )
+        send_bid_email_notification(
+            recipient=bid.job.client,
+            actor=request.user,
+            subject=f'Bid withdrawn for {bid.job.title}',
+            heading='Bid Withdrawn',
+            intro=f'{request.user.get_full_name() or request.user.username} withdrew their bid.',
+            job_title=bid.job.title,
+            amount=bid.amount,
+            extra_label='Status',
+            extra_value='Withdrawn',
+        )
         serializer = self.get_serializer(bid)
         return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def analytics_api(request):
+    """Shared analytics for RFQs and invoice pricing."""
+    user = request.user
+
+    shared_service_counts = list(
+        RFQ.objects.values('service__title', 'service__category')
+        .annotate(rfq_count=Count('id'))
+        .order_by('-rfq_count')[:5]
+    )
+    shared_pricing = Invoice.objects.aggregate(
+        average=Avg('total_amount'),
+        minimum=Min('total_amount'),
+        maximum=Max('total_amount'),
+    )
+
+    if user.current_role == 'provider':
+        user_rfqs = RFQ.objects.filter(provider=user)
+        user_invoices = Invoice.objects.filter(provider=user)
+        customer_count = user_rfqs.values('client').distinct().count()
+        service_breakdown = list(
+            user_rfqs.values('service__title')
+            .annotate(rfq_count=Count('id'))
+            .order_by('-rfq_count')
+        )
+    else:
+        user_rfqs = RFQ.objects.filter(client=user)
+        user_invoices = Invoice.objects.filter(client=user)
+        customer_count = 1 if user_rfqs.exists() else 0
+        service_breakdown = list(
+            user_rfqs.values('service__title')
+            .annotate(rfq_count=Count('id'))
+            .order_by('-rfq_count')
+        )
+
+    user_pricing = user_invoices.aggregate(
+        average=Avg('total_amount'),
+        minimum=Min('total_amount'),
+        maximum=Max('total_amount'),
+    )
+
+    return Response({
+        'rfqs_total': user_rfqs.count(),
+        'invoices_total': user_invoices.count(),
+        'customers_sent_rfq_count': customer_count,
+        'services_most_requested': service_breakdown,
+        'shared_services_most_requested': shared_service_counts,
+        'pricing': {
+            'average': user_pricing['average'] or 0,
+            'minimum': user_pricing['minimum'] or 0,
+            'maximum': user_pricing['maximum'] or 0,
+        },
+        'shared_pricing': {
+            'average': shared_pricing['average'] or 0,
+            'minimum': shared_pricing['minimum'] or 0,
+            'maximum': shared_pricing['maximum'] or 0,
+        }
+    })
 
 
 @api_view(['GET'])

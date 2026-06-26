@@ -518,6 +518,52 @@
             flex-wrap: wrap;
         }
 
+        .trade-filter-group {
+            min-width: 220px;
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            background: rgba(15, 23, 42, 0.45);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .trade-filter-summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 0.95rem 1rem;
+            color: #f8fafc;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            background: rgba(30, 41, 59, 0.82);
+        }
+
+        .trade-filter-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .trade-filter-summary::after {
+            content: '+';
+            float: right;
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
+
+        .trade-filter-group[open] .trade-filter-summary::after {
+            content: '-';
+        }
+
+        .trade-subfilters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.74);
+        }
+
+        .trade-subfilters .filter-btn {
+            flex: 1 1 calc(50% - 0.65rem);
+            min-width: 0;
+        }
+
         .filter-btn {
             padding: 10px 24px;
             border: 2px solid rgba(51, 65, 85, 0.8);
@@ -1030,16 +1076,814 @@
                 align-items: flex-start;
             }
         }
+
+        :root {
+            --bg: #080808;
+            --panel: rgba(18, 18, 18, 0.94);
+            --panel-soft: rgba(24, 24, 24, 0.9);
+            --panel-strong: #111111;
+            --surface: rgba(255, 255, 255, 0.04);
+            --surface-hover: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #d9ceab;
+            --line: rgba(212, 175, 55, 0.26);
+            --line-strong: rgba(212, 175, 55, 0.54);
+            --gold: #d4af37;
+            --gold-deep: #b48811;
+            --gold-soft: rgba(212, 175, 55, 0.14);
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(212, 175, 55, 0.16), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(212, 175, 55, 0.12), transparent 30%),
+                linear-gradient(160deg, #060606 0%, #101010 52%, #050505 100%);
+            color: var(--text-main);
+        }
+
+        body::before {
+            background:
+                linear-gradient(135deg, rgba(212, 175, 55, 0.05), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 26%);
+        }
+
+        nav,
+        .dashboard-header,
+        .stat-card,
+        .inbox-section,
+        .service-card,
+        .modal-content,
+        .notification-dropdown {
+            background: var(--panel);
+            border-color: var(--line);
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-main);
+            background: none;
+            -webkit-text-fill-color: initial;
+            text-shadow: none;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .logo-mark,
+        .inline-icon,
+        .button-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .logo-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: linear-gradient(145deg, var(--gold), var(--gold-deep));
+            color: #111111;
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.22);
+        }
+
+        .logo-mark svg,
+        .inline-icon svg,
+        .button-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-bar,
+        .mode-toggle,
+        .icon-button,
+        .filters-panel select,
+        .filters-panel input,
+        .form-group input,
+        .form-group textarea,
+        .form-group select,
+        .btn-cancel,
+        .btn-secondary,
+        .conversation-card {
+            background: var(--surface);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            border-radius: 14px;
+        }
+
+        .search-bar:hover,
+        .mode-toggle:hover,
+        .icon-button:hover,
+        .filter-btn:hover,
+        .service-card:hover,
+        .conversation-card:hover,
+        .btn-secondary:hover,
+        .btn-cancel:hover {
+            border-color: var(--line-strong);
+            background: var(--surface-hover);
+        }
+
+        .search-bar:focus-within,
+        .filters-panel select:focus,
+        .filters-panel input:focus,
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.14);
+        }
+
+        .search-bar input,
+        .user-info h4,
+        .welcome h1,
+        .section-header h2,
+        .modal-body h3 {
+            color: var(--text-main);
+        }
+
+        .search-bar input::placeholder,
+        .user-info p,
+        .welcome p,
+        .service-description,
+        .conversation-preview,
+        .filters-panel select,
+        .filters-panel input,
+        .form-group label,
+        .form-group input::placeholder,
+        .form-group textarea::placeholder,
+        .notification-item,
+        .provider-stat span,
+        .comment-date,
+        .comment-text {
+            color: var(--text-muted);
+        }
+
+        .toggle-label,
+        .filter-btn,
+        .btn-secondary,
+        .btn-cancel,
+        .icon-button {
+            font-weight: 700;
+        }
+
+        .toggle-switch,
+        .toggle-switch.active,
+        .service-header,
+        .btn-primary,
+        .btn-submit,
+        .post-job-btn,
+        .filter-btn.active {
+            background: linear-gradient(145deg, var(--gold), var(--gold-deep));
+            border-color: transparent;
+            color: #111111;
+            box-shadow: 0 14px 30px rgba(212, 175, 55, 0.24);
+        }
+
+        .toggle-slider {
+            background: #111111;
+        }
+
+        .avatar,
+        .provider-avatar {
+            background: linear-gradient(145deg, var(--gold), var(--gold-deep));
+            color: #111111;
+        }
+
+        .stat-card {
+            border-left-color: var(--gold);
+        }
+
+        .stat-card::before,
+        .service-card::before,
+        .dashboard-header::before,
+        .login-card::before {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), transparent 60%);
+        }
+
+        .stat-card h3,
+        .price {
+            background: none;
+            -webkit-text-fill-color: initial;
+            color: var(--gold);
+        }
+
+        .stat-card p,
+        .modal-header p,
+        .section-header p {
+            color: var(--text-muted);
+        }
+
+        .service-category,
+        .status-badge,
+        .sentiment-badge {
+            background: var(--gold-soft);
+            color: var(--gold);
+            border: 1px solid rgba(212, 175, 55, 0.34);
+        }
+
+        .rating {
+            color: var(--gold);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: var(--line-strong);
+        }
+
+        .modal-close {
+            color: var(--text-main);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 3rem;
+            border: 1px dashed var(--line);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .meta-label {
+            color: var(--gold);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .button-with-icon,
+        .search-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-icon-btn {
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            border-radius: 14px;
+            justify-content: center;
+        }
+
+        .header-icon-btn .button-with-icon {
+            gap: 0;
+        }
+
+        .header-icon-btn .button-with-icon span:last-child {
+            display: none;
+        }
+
+        .header-icon-btn .button-icon svg {
+            width: 19px;
+            height: 19px;
+        }
+
+        :root {
+            --page-bg: #fcfaf4;
+            --page-bg-soft: #f3ecdc;
+            --page-text: #17130d;
+            --page-muted: #746754;
+            --page-line: rgba(199, 150, 26, 0.16);
+            --page-line-strong: rgba(199, 150, 26, 0.34);
+            --page-gold: #c7961a;
+            --page-gold-deep: #9c7310;
+            --page-card: rgba(255, 255, 255, 0.9);
+            --page-card-strong: #ffffff;
+            --page-surface: #f8f2e6;
+            --page-surface-strong: #efe5d2;
+            --page-shadow: 0 24px 54px rgba(81, 60, 31, 0.1);
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, rgba(199, 150, 26, 0.12), transparent 26%),
+                radial-gradient(circle at bottom right, rgba(116, 103, 84, 0.08), transparent 22%),
+                linear-gradient(180deg, #fffef9 0%, var(--page-bg) 100%);
+            color: var(--page-text);
+        }
+
+        body::before {
+            background:
+                linear-gradient(135deg, rgba(199, 150, 26, 0.04), transparent 32%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 36%);
+        }
+
+        body.app-loading {
+            overflow: hidden;
+        }
+
+        .page-loader {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(252, 250, 244, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-card {
+            width: min(420px, 100%);
+            padding: 34px 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.74);
+            border-radius: 28px;
+            box-shadow: 0 28px 70px rgba(81, 60, 31, 0.12);
+        }
+
+        .loader-mark {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 18px;
+            border-radius: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            background: linear-gradient(145deg, var(--page-gold), var(--page-gold-deep));
+            box-shadow: 0 16px 32px rgba(199, 150, 26, 0.24);
+            animation: loaderFloat 1.9s ease-in-out infinite;
+        }
+
+        .loader-mark svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .loader-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--page-text);
+            margin-bottom: 8px;
+        }
+
+        .loader-text {
+            color: var(--page-muted);
+            font-size: 0.98rem;
+            line-height: 1.65;
+            margin-bottom: 18px;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .loader-bar {
+            height: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: var(--page-surface);
+        }
+
+        .loader-progress {
+            width: 42%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--page-gold), #e3bc59, var(--page-gold-deep));
+            animation: loaderSweep 1.2s ease-in-out infinite;
+        }
+
+        @keyframes loaderSweep {
+            0% { transform: translateX(-110%); }
+            100% { transform: translateX(320%); }
+        }
+
+        @keyframes loaderFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.76);
+            border-bottom: 1px solid var(--page-line);
+            box-shadow: 0 14px 34px rgba(81, 60, 31, 0.06);
+            backdrop-filter: blur(18px);
+        }
+
+        .logo {
+            color: var(--page-text);
+            background: none;
+            -webkit-text-fill-color: initial;
+            text-shadow: none;
+            letter-spacing: 0.04em;
+        }
+
+        .logo-mark,
+        .avatar,
+        .provider-avatar,
+        .post-job-btn,
+        .btn-primary,
+        .btn-submit,
+        .filter-btn.active,
+        .toggle-switch.active,
+        .service-header {
+            background: linear-gradient(145deg, var(--page-gold), var(--page-gold-deep));
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 16px 32px rgba(199, 150, 26, 0.2);
+        }
+
+        .post-job-btn,
+        .btn-primary,
+        .btn-submit {
+            color: var(--page-text);
+        }
+
+        .toggle-slider {
+            background: #ffffff;
+        }
+
+        .search-bar,
+        .mode-toggle,
+        .icon-button,
+        .filters-panel select,
+        .filters-panel input,
+        .btn-secondary,
+        .btn-cancel,
+        .conversation-card,
+        .notification-dropdown,
+        .modal-content,
+        .dashboard-header,
+        .stat-card,
+        .inbox-section,
+        .service-card {
+            background: var(--page-card);
+            border-color: var(--page-line);
+            box-shadow: var(--page-shadow);
+            color: var(--page-text);
+        }
+
+        .search-bar,
+        .mode-toggle,
+        .icon-button,
+        .filters-panel select,
+        .filters-panel input,
+        .btn-secondary,
+        .btn-cancel,
+        .conversation-card {
+            background: rgba(255, 255, 255, 0.78);
+            border-radius: 16px;
+        }
+
+        .search-bar:hover,
+        .mode-toggle:hover,
+        .icon-button:hover,
+        .filters-panel select:hover,
+        .filters-panel input:hover,
+        .conversation-card:hover,
+        .service-card:hover,
+        .btn-secondary:hover,
+        .btn-cancel:hover,
+        .logout-btn:hover,
+        .filter-btn:hover {
+            border-color: var(--page-line-strong);
+            background: var(--page-card-strong);
+        }
+
+        .search-bar:focus-within,
+        .filters-panel select:focus,
+        .filters-panel input:focus,
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--page-gold);
+            box-shadow: 0 0 0 4px rgba(199, 150, 26, 0.14);
+        }
+
+        .search-bar input,
+        .user-info h4,
+        .welcome h1,
+        .section-header h2,
+        .modal-body h3,
+        .service-header h3 {
+            color: var(--page-text);
+        }
+
+        .search-bar input::placeholder,
+        .user-info p,
+        .welcome p,
+        .service-description,
+        .conversation-preview,
+        .filters-panel select,
+        .filters-panel input,
+        .form-group label,
+        .form-group input::placeholder,
+        .form-group textarea::placeholder,
+        .notification-item,
+        .provider-stat span,
+        .comment-date,
+        .comment-text,
+        .subtitle {
+            color: var(--page-muted);
+        }
+
+        .dashboard-header,
+        .inbox-section,
+        .stat-card,
+        .service-card,
+        .modal-content {
+            border-radius: 28px;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before,
+        .service-card::before,
+        .stat-card::before {
+            background: linear-gradient(135deg, rgba(199, 150, 26, 0.08), transparent 58%);
+        }
+
+        .service-category,
+        .status-badge,
+        .sentiment-badge {
+            background: rgba(199, 150, 26, 0.12);
+            color: var(--page-gold-deep);
+            border: 1px solid rgba(199, 150, 26, 0.22);
+        }
+
+        .stat-card h3,
+        .price,
+        .rating,
+        .meta-label {
+            color: var(--page-gold-deep);
+            background: none;
+            -webkit-text-fill-color: initial;
+        }
+
+        .logout-btn,
+        .filter-btn {
+            background: var(--page-surface);
+            border-color: var(--page-line);
+            color: var(--page-text);
+        }
+
+        .modal-body .form-group label,
+        .modal-body .form-group label strong,
+        .modal-body .form-group label span {
+            color: var(--page-text);
+        }
+
+        .modal-body .form-group input,
+        .modal-body .form-group textarea,
+        .modal-body .form-group select {
+            background: rgba(255, 255, 255, 0.96);
+            color: var(--page-text);
+            border: 1px solid var(--page-line-strong);
+            box-shadow: inset 0 1px 2px rgba(81, 60, 31, 0.06);
+        }
+
+        .modal-body .form-group input::placeholder,
+        .modal-body .form-group textarea::placeholder {
+            color: var(--page-muted);
+        }
+
+        .modal-body .form-group input:focus,
+        .modal-body .form-group textarea:focus,
+        .modal-body .form-group select:focus {
+            background: #ffffff;
+            color: var(--page-text);
+            border-color: var(--page-gold);
+            box-shadow: 0 0 0 4px rgba(199, 150, 26, 0.14);
+        }
+
+        .modal-body .form-group select option {
+            background: #ffffff;
+            color: var(--page-text);
+        }
+
+        .modal-body .form-group input:-webkit-autofill,
+        .modal-body .form-group textarea:-webkit-autofill,
+        .modal-body .form-group select:-webkit-autofill {
+            -webkit-text-fill-color: var(--page-text);
+            -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .empty-state {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px dashed var(--page-line);
+            color: var(--page-muted);
+        }
+
+        .container {
+            max-width: 1440px;
+            padding: 0 2.2rem 2.2rem;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .sidebar-nav {
+            position: sticky;
+            top: 96px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.2rem;
+            background: var(--page-card);
+            border: 1px solid var(--page-line);
+            border-radius: 24px;
+            box-shadow: var(--page-shadow);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            padding: 0.95rem 1rem;
+            border: 1px solid var(--page-line);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--page-text);
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.22s ease;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: linear-gradient(145deg, var(--page-gold), var(--page-gold-deep));
+            color: #17130d;
+            border-color: transparent;
+        }
+
+        .sidebar-link-logout {
+            margin-top: 0.5rem;
+        }
+
+        .workspace-area,
+        .workspace-section {
+            min-width: 0;
+        }
+
+        .section-header h2,
+        .service-body,
+        .service-body p,
+        .service-meta,
+        .service-meta div,
+        .conversation-card,
+        .conversation-header span,
+        .conversation-preview,
+        .notification-item,
+        .modal-body,
+        .modal-body p,
+        .modal-body div,
+        .modal-body span,
+        .provider-details h2,
+        .comment-author,
+        .comment-text,
+        .comment-date,
+        .filters-panel select,
+        .filters-panel input,
+        #modalTitle,
+        #modalProviderName,
+        #modalProviderLocation,
+        #modalRatingText,
+        #modalDescription {
+            color: var(--page-text);
+        }
+
+        .conversation-preview,
+        .comment-text,
+        .comment-date,
+        .provider-stat span,
+        .filters-panel select,
+        .filters-panel input {
+            color: var(--page-muted);
+        }
+
+        .muted-text {
+            color: var(--page-muted) !important;
+        }
+
+        .accent-text {
+            color: var(--page-gold-deep) !important;
+        }
+
+        .job-card-header {
+            background: linear-gradient(145deg, var(--page-gold), var(--page-gold-deep)) !important;
+            color: #ffffff;
+        }
+
+        .modal-header {
+            background: linear-gradient(145deg, var(--page-gold), var(--page-gold-deep));
+            color: #ffffff;
+            border-bottom: 0;
+        }
+
+        .modal-header h2,
+        .modal-header p,
+        .modal-header div,
+        .modal-header span {
+            color: #ffffff;
+        }
+
+        .modal-content {
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            max-height: calc(90vh - 190px);
+        }
+
+        #serviceModal .modal-content,
+        #jobDetailModal .modal-content {
+            max-height: 88vh;
+        }
+
+        #serviceModal .modal-body,
+        #jobDetailModal .modal-body,
+        #inboxModal .modal-body {
+            overflow-y: auto;
+        }
+
+        @media (max-width: 980px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-nav {
+                position: static;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .sidebar-link {
+                width: auto;
+                flex: 1 1 180px;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="page-loader" id="pageLoader" aria-hidden="true">
+        <div class="loader-card">
+            <div class="loader-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 5l5 5"></path>
+                    <path d="M11 8l6 6"></path>
+                    <path d="M7 12l5 5"></path>
+                    <path d="M3 21l6-2 12-12-4-4L5 15l-2 6z"></path>
+                </svg>
+            </div>
+            <div class="loader-title">Preparing your workspace</div>
+            <div class="loader-text">Loading services, jobs, messages, and notifications for a smoother first view.</div>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
+        </div>
+    </div>
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
-            <div class="logo">🛠️ Vashandi</div>
+            <div class="logo">
+                <span class="logo-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 5l5 5"></path>
+                        <path d="M11 8l6 6"></path>
+                        <path d="M7 12l5 5"></path>
+                        <path d="M3 21l6-2 12-12-4-4L5 15l-2 6z"></path>
+                    </svg>
+                </span>
+                <span>Vashandi</span>
+            </div>
             <div class="nav-right">
                 <div class="search-bar">
-                    <span>🔍</span>
+                    <span class="inline-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="M20 20l-3.5-3.5"></path>
+                        </svg>
+                    </span>
                     <input type="text" id="searchInput" placeholder="Search for services or workers..." onkeyup="searchServices()">
                 </div>
                 <div class="mode-toggle">
@@ -1049,13 +1893,28 @@
                     </div>
                 </div>
                 <div class="nav-actions">
-                    <button class="icon-button" id="messagesButton" onclick="openInboxPanel()">
-                        Messages
+                    <button class="icon-button header-icon-btn" id="messagesButton" onclick="openInboxPanel()" aria-label="Open inbox" title="Inbox">
+                        <span class="button-with-icon">
+                            <span class="button-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </span>
+                            <span>Inbox</span>
+                        </span>
                         <span class="badge" id="messagesBadge">0</span>
                     </button>
                     <div style="position: relative;">
                         <button class="icon-button" id="notificationsButton" onclick="toggleNotificationsDropdown()">
-                            Notifications
+                            <span class="button-with-icon">
+                                <span class="button-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path>
+                                        <path d="M10 21a2 2 0 0 0 4 0"></path>
+                                    </svg>
+                                </span>
+                                <span>Notifications</span>
+                            </span>
                             <span class="badge" id="notificationsBadge">0</span>
                         </button>
                         <div class="notification-dropdown" id="notificationsDropdown">
@@ -1078,34 +1937,40 @@
 
     <!-- Main Container -->
     <div class="container">
+        <div class="app-shell">
+            <aside class="sidebar-nav">
+                <button type="button" class="sidebar-link active" id="sidebarDashboard" onclick="switchWorkspaceTab('dashboard')">Dashboard</button>
+                <button type="button" class="sidebar-link" id="sidebarRfqs" onclick="switchWorkspaceTab('rfqs')">Quotes / RFQs</button>
+                <button type="button" class="sidebar-link" id="sidebarInvoices" onclick="switchWorkspaceTab('invoices')">Invoices</button>
+                <button type="button" class="sidebar-link" id="sidebarAnalytics" onclick="switchWorkspaceTab('analytics')">Analytics</button>
+                <a href="{% url 'logout' %}" class="sidebar-link sidebar-link-logout">Logout</a>
+            </aside>
+            <div class="workspace-area">
+                <section id="dashboardSection">
         <!-- Dashboard Header -->
         <div class="dashboard-header">
             <div class="header-content">
                 <div class="welcome">
-                    <h1 id="welcomeMessage">Welcome back, {{ user.first_name }}! 👋</h1>
+                    <h1 id="welcomeMessage">Welcome back, {{ user.first_name }}</h1>
                     <p id="dashboardSubtitle">Find skilled workers for your next project</p>
                 </div>
                 <button class="post-job-btn" id="postJobBtn" onclick="openPostJobModal()">
-                    ➕ Post a Job
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                            </svg>
+                        </span>
+                        <span>Post a Job</span>
+                    </span>
                 </button>
             </div>
         </div>
-
         <!-- Stats Grid -->
         <div class="stats-grid" id="statsGrid">
             <!-- Stats will be loaded via API -->
         </div>
-
-        <!-- Inbox Section -->
-        <section class="inbox-section">
-            <div class="section-header">
-                <h2>Inbox</h2>
-                <button class="btn-secondary" onclick="openInboxPanel()">Open Inbox</button>
-            </div>
-            <div class="conversation-list" id="conversationList">
-                <p style="color: #64748b;">No conversations yet. Start messaging providers to see updates here.</p>
-            </div>
-        </section>
 
         <!-- Job Filters -->
         <div class="filters-panel" id="jobFiltersPanel" style="display: none;">
@@ -1141,19 +2006,46 @@
         <div class="services-section">
             <div class="section-header">
                 <h2 id="sectionTitle">Available Services</h2>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterServices('all')">All</button>
-                    <button class="filter-btn" onclick="filterServices('plumbing')">Plumbing</button>
-                    <button class="filter-btn" onclick="filterServices('electrical')">Electrical</button>
-                    <button class="filter-btn" onclick="filterServices('carpentry')">Carpentry</button>
-                    <button class="filter-btn" onclick="filterServices('painting')">Painting</button>
-                    <button class="filter-btn" onclick="filterServices('masonry')">Masonry</button>
-                    <button class="filter-btn" onclick="filterServices('gardening')">Gardening</button>
-                </div>
+                <div class="filter-buttons" id="categoryFilters"></div>
             </div>
 
             <div class="services-grid" id="servicesGrid">
                 <!-- Services will be dynamically rendered here -->
+            </div>
+        </div>
+                </section>
+
+                <section id="rfqSection" class="workspace-section" style="display: none;">
+                    <div class="section-header">
+                        <div>
+                            <h2>Quotes / RFQs</h2>
+                            <p class="muted-text">Send requests for quotes and track incoming quote demand.</p>
+                        </div>
+                        <button type="button" class="post-job-btn" id="newRfqBtn" onclick="openRfqModal()" style="display: none;">New RFQ</button>
+                    </div>
+                    <div id="rfqContent" class="services-grid"></div>
+                </section>
+
+                <section id="invoiceSection" class="workspace-section" style="display: none;">
+                    <div class="section-header">
+                        <div>
+                            <h2>Invoices</h2>
+                            <p class="muted-text">Build and send invoices directly on the platform.</p>
+                        </div>
+                    </div>
+                    <div id="invoiceContent" class="services-grid"></div>
+                </section>
+
+                <section id="analyticsSection" class="workspace-section" style="display: none;">
+                    <div class="section-header">
+                        <div>
+                            <h2>Analytics</h2>
+                            <p class="muted-text">Shared business analytics for demand, customers, and pricing.</p>
+                        </div>
+                    </div>
+                    <div id="analyticsContent" class="stats-grid"></div>
+                    <div id="analyticsBreakdown" class="services-grid" style="margin-top: 1.5rem;"></div>
+                </section>
             </div>
         </div>
     </div>
@@ -1162,7 +2054,7 @@
     <div class="modal" id="serviceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <button class="modal-close" onclick="closeModal('serviceModal')">×</button>
+                <button class="modal-close" onclick="closeModal('serviceModal')">&times;</button>
                 <div class="service-category" id="modalCategory">PLUMBING</div>
                 <h2 id="modalTitle">Service Title</h2>
                 <div class="service-provider">
@@ -1179,7 +2071,7 @@
                     <div class="provider-details">
                         <h2 id="modalProfileName">John Phiri</h2>
                         <div class="rating">
-                            <span id="modalRatingStars"></span> <span style="color: #64748b; margin-left: 5px;" id="modalRatingText">4.9 (127 reviews)</span>
+                            <span id="modalRatingStars"></span> <span class="muted-text" style="margin-left: 5px;" id="modalRatingText">4.9 (127 reviews)</span>
                         </div>
                         <div class="provider-stats">
                             <div class="provider-stat">
@@ -1199,14 +2091,17 @@
                 </div>
 
                 <h3>Service Description</h3>
-                <p id="modalDescription" style="color: #cbd5e1; margin: 1rem 0 2rem; line-height: 1.8;"></p>
+                <p id="modalDescription" class="muted-text" style="margin: 1rem 0 2rem; line-height: 1.8;"></p>
 
                 <h3>Price</h3>
-                <p style="font-size: 2em; font-weight: 700; color: #10b981; margin: 1rem 0 2rem;" id="modalPrice">$50/hour</p>
+                <p class="accent-text" style="font-size: 2em; font-weight: 700; margin: 1rem 0 2rem;" id="modalPrice">$50/hour</p>
 
                 <!-- Comments Section -->
                 <div class="comments-section">
-                    <h3>Reviews & Ratings</h3>
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Reviews & Ratings</h3>
+                        <button type="button" class="btn-secondary" id="leaveReviewBtn" style="display: none;">Leave Rating & Comment</button>
+                    </div>
                     <div id="commentsContainer">
                         <!-- Comments will be dynamically rendered here -->
                     </div>
@@ -1223,12 +2118,12 @@
             </div>
             <div class="inbox-modal-thread">
                 <div class="modal-header">
-                    <button class="modal-close" onclick="closeModal('inboxModal')">×</button>
+                    <button class="modal-close" onclick="closeModal('inboxModal')">&times;</button>
                     <h2 style="margin: 0;">Inbox</h2>
-                    <p style="margin: 0; color: #94a3b8;">Select a conversation to open the messaging window.</p>
+                    <p class="muted-text" style="margin: 0;">Select a conversation to open the messaging window.</p>
                 </div>
                 <div class="modal-body" id="inboxModalBody" style="flex: 1;">
-                    <p style="color: #94a3b8;">No conversation selected.</p>
+                    <p class="muted-text">No conversation selected.</p>
                 </div>
             </div>
         </div>
@@ -1238,7 +2133,7 @@
     <div class="modal" id="postJobModal">
         <div class="modal-content">
             <div class="modal-header">
-                <button class="modal-close" onclick="closeModal('postJobModal')">×</button>
+                <button class="modal-close" onclick="closeModal('postJobModal')">&times;</button>
                 <h2>Post a New Job</h2>
                 <p style="opacity: 0.9; margin-top: 0.5rem;">Fill in the details to find the right worker</p>
             </div>
@@ -1250,14 +2145,8 @@
                     </div>
                     <div class="form-group">
                         <label>Category *</label>
-                        <select name="category" required>
+                        <select name="category_ref" id="jobCategorySelect" required>
                             <option value="">Select a category</option>
-                            <option value="plumbing">Plumbing</option>
-                            <option value="electrical">Electrical</option>
-                            <option value="carpentry">Carpentry</option>
-                            <option value="painting">Painting</option>
-                            <option value="masonry">Masonry</option>
-                            <option value="gardening">Gardening</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1289,10 +2178,10 @@
     <div class="modal" id="jobDetailModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <button class="modal-close" onclick="closeModal('jobDetailModal')">×</button>
+                <button class="modal-close" onclick="closeModal('jobDetailModal')">&times;</button>
                 <div class="service-category" id="jobDetailStatus">OPEN</div>
                 <h2 id="jobDetailTitle">Job Title</h2>
-                <p id="jobDetailClient" style="color: #94a3b8; margin-top: 0.5rem;"></p>
+                <p id="jobDetailClient" class="muted-text" style="margin-top: 0.5rem;"></p>
             </div>
             <div class="modal-body" id="jobDetailBody">
                 <!-- Populated dynamically -->
@@ -1304,9 +2193,9 @@
     <div class="modal" id="bidModal">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <button class="modal-close" onclick="closeModal('bidModal')">×</button>
+                <button class="modal-close" onclick="closeModal('bidModal')">&times;</button>
                 <h2>Place Bid</h2>
-                <p id="bidJobTitle" style="color: #94a3b8;"></p>
+                <p id="bidJobTitle" class="muted-text"></p>
             </div>
             <div class="modal-body">
                 <form id="bidForm" onsubmit="submitBid(event)">
@@ -1342,7 +2231,7 @@
     <div class="modal" id="reviewModal">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <button class="modal-close" onclick="closeModal('reviewModal')">×</button>
+                <button class="modal-close" onclick="closeModal('reviewModal')">&times;</button>
                 <h2>Leave a Review</h2>
             </div>
             <div class="modal-body">
@@ -1378,6 +2267,95 @@
         </div>
     </div>
 
+    <div class="modal" id="rfqModal">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('rfqModal')">&times;</button>
+                <h2>Send RFQ</h2>
+                <p class="muted-text">Create a request for quote and send it directly to a provider.</p>
+            </div>
+            <div class="modal-body">
+                <form id="rfqForm" onsubmit="submitRfq(event)">
+                    <div class="form-group">
+                        <label>Service</label>
+                        <select id="rfqServiceSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>RFQ Title</label>
+                        <input type="text" id="rfqTitle" required placeholder="e.g. Full bathroom plumbing quote">
+                    </div>
+                    <div class="form-group">
+                        <label>Requirements</label>
+                        <textarea id="rfqRequirements" required placeholder="Describe the work you need quoted."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="rfqQuantity" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Budget</label>
+                        <input type="number" id="rfqBudget" min="0" step="0.01" placeholder="Optional budget">
+                    </div>
+                    <div class="form-group">
+                        <label>Preferred Start Date</label>
+                        <input type="date" id="rfqPreferredDate">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('rfqModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Send RFQ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="invoiceModal">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('invoiceModal')">&times;</button>
+                <h2>Create Invoice</h2>
+                <p class="muted-text">Build and send an invoice from an RFQ.</p>
+            </div>
+            <div class="modal-body">
+                <form id="invoiceForm" onsubmit="submitInvoice(event)">
+                    <input type="hidden" id="invoiceRfqId">
+                    <div class="form-group">
+                        <label>Invoice Title</label>
+                        <input type="text" id="invoiceTitle" required placeholder="e.g. Plumbing repair quotation">
+                    </div>
+                    <div class="form-group">
+                        <label>Scope of Work</label>
+                        <textarea id="invoiceScope" required placeholder="Explain the work included in this invoice."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Line Items</label>
+                        <textarea id="invoiceLineItems" placeholder="Optional breakdown, one line per item."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Subtotal</label>
+                        <input type="number" id="invoiceSubtotal" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tax</label>
+                        <input type="number" id="invoiceTax" min="0" step="0.01" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="invoiceDueDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="invoiceNotes" placeholder="Optional notes for the client."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('invoiceModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Send Invoice</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         // CSRF Token helper
         function getCookie(name) {
@@ -1399,6 +2377,7 @@
 
         // Current user state
         let currentUser = {
+            id: {{ user.id }},
             role: '{{ user.current_role }}',
             initials: '{{ user.avatar_initials }}',
             name: '{{ user.get_full_name }}',
@@ -1406,13 +2385,143 @@
         };
 
         let currentFilter = 'all';
+        let clientContentMode = 'services';
+        let providerContentMode = 'mine';
+        let currentWorkspaceTab = 'dashboard';
         let servicesData = [];
+        let rfqData = [];
+        let invoiceData = [];
+        let categoryTree = [];
+        let categoryBySlug = {};
+        let categoryById = {};
+        let jobFilters = {
+            category: 'all',
+            status: 'all',
+            minBudget: '',
+            maxBudget: '',
+            location: '',
+            datePosted: '',
+            deadline: '',
+            sort: 'newest'
+        };
+
+        function prettifyCategory(value) {
+            return (value || '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, char => char.toUpperCase());
+        }
+
+        function indexCategories(categories) {
+            categoryBySlug = {};
+            categoryById = {};
+            categories.forEach(trade => {
+                categoryBySlug[trade.slug] = trade;
+                categoryById[String(trade.id)] = trade;
+                (trade.children || []).forEach(category => {
+                    categoryBySlug[category.slug] = { ...category, parent_trade: trade };
+                    categoryById[String(category.id)] = { ...category, parent_trade: trade };
+                });
+            });
+        }
+
+        function getDisplayCategory(item) {
+            return item.category_name || item.name || prettifyCategory(item.category);
+        }
+
+        function isTradeOpen(trade) {
+            return currentFilter === trade.slug || (trade.children || []).some(child => child.slug === currentFilter);
+        }
+
+        function setActiveCategoryFilter() {
+            document.querySelectorAll('#categoryFilters .filter-btn').forEach(button => {
+                button.classList.toggle('active', button.dataset.category === currentFilter);
+            });
+            document.querySelectorAll('#categoryFilters details').forEach(group => {
+                const trade = categoryBySlug[group.dataset.trade];
+                if (trade) {
+                    group.open = isTradeOpen(trade);
+                }
+            });
+        }
+
+        function renderCategoryFilters() {
+            const container = document.getElementById('categoryFilters');
+            if (!container) return;
+
+            const allMarkup = `
+                <button type="button" class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" data-category="all" onclick="filterServices('all')">
+                    All Categories
+                </button>
+            `;
+
+            const tradeMarkup = categoryTree.map(trade => `
+                <details class="trade-filter-group" data-trade="${trade.slug}" ${isTradeOpen(trade) ? 'open' : ''}>
+                    <summary class="trade-filter-summary">${trade.name}</summary>
+                    <div class="trade-subfilters">
+                        <button type="button" class="filter-btn" data-category="${trade.slug}" onclick="filterServices('${trade.slug}')">All ${trade.name}</button>
+                        ${(trade.children || []).map(category => `
+                            <button type="button" class="filter-btn" data-category="${category.slug}" onclick="filterServices('${category.slug}')">${category.name}</button>
+                        `).join('')}
+                    </div>
+                </details>
+            `).join('');
+
+            container.innerHTML = allMarkup + tradeMarkup;
+            setActiveCategoryFilter();
+        }
+
+        function populateJobCategoryOptions() {
+            const select = document.getElementById('jobCategorySelect');
+            if (!select) return;
+
+            const options = ['<option value="">Select a category</option>'];
+            categoryTree.forEach(trade => {
+                if (!trade.children || trade.children.length === 0) {
+                    options.push(`<option value="${trade.id}">${trade.name}</option>`);
+                    return;
+                }
+                options.push(`
+                    <optgroup label="${trade.name}">
+                        ${trade.children.map(category => `<option value="${category.id}">${category.name}</option>`).join('')}
+                    </optgroup>
+                `);
+            });
+            select.innerHTML = options.join('');
+        }
+
+        async function loadCategoryTree() {
+            try {
+                const response = await fetch('/api/categories/');
+                const data = await response.json();
+                categoryTree = data.results || data;
+                indexCategories(categoryTree);
+                renderCategoryFilters();
+                populateJobCategoryOptions();
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
 
         // Initialize
+        function hidePageLoader() {
+            const loader = document.getElementById('pageLoader');
+            if (!loader) return;
+            loader.classList.add('hidden');
+            document.body.classList.remove('app-loading');
+        }
+
         window.onload = async function() {
-            await loadStats();
-            updateUserInterface();
-            await loadAndRenderContent();
+            document.body.classList.add('app-loading');
+            try {
+                await loadCategoryTree();
+                await loadStats();
+                updateUserInterface();
+                await loadAndRenderContent();
+                await refreshDashboardAlerts();
+                startDashboardPolling();
+            } finally {
+                setTimeout(hidePageLoader, 350);
+            }
         };
 
         // Load Stats
@@ -1434,7 +2543,7 @@
                             <p>Jobs Completed</p>
                         </div>
                         <div class="stat-card">
-                            <h3>${stats.average_rating ? stats.average_rating.toFixed(1) + '⭐' : 'N/A'}</h3>
+                            <h3>${stats.average_rating ? stats.average_rating.toFixed(1) + ' / 5' : 'N/A'}</h3>
                             <p>Your Rating</p>
                         </div>
                         <div class="stat-card">
@@ -1470,16 +2579,51 @@
         // Load and Render Content based on role
         async function loadAndRenderContent() {
             if (currentUser.role === 'provider') {
-                await loadServices();
+                await loadServices(currentFilter, document.getElementById('searchInput').value, providerContentMode === 'mine');
+            } else if (clientContentMode === 'services') {
+                await loadServices(currentFilter, document.getElementById('searchInput').value);
             } else {
-                await loadJobs();
+                await loadJobs(true);
+            }
+        }
+
+        async function switchWorkspaceTab(tab) {
+            currentWorkspaceTab = tab;
+            document.getElementById('dashboardSection').style.display = tab === 'dashboard' ? 'block' : 'none';
+            document.getElementById('rfqSection').style.display = tab === 'rfqs' ? 'block' : 'none';
+            document.getElementById('invoiceSection').style.display = tab === 'invoices' ? 'block' : 'none';
+            document.getElementById('analyticsSection').style.display = tab === 'analytics' ? 'block' : 'none';
+
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+            const activeMap = {
+                dashboard: 'sidebarDashboard',
+                rfqs: 'sidebarRfqs',
+                invoices: 'sidebarInvoices',
+                analytics: 'sidebarAnalytics',
+            };
+            const activeLink = document.getElementById(activeMap[tab]);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+
+            const newRfqBtn = document.getElementById('newRfqBtn');
+            if (newRfqBtn) {
+                newRfqBtn.style.display = tab === 'rfqs' && currentUser.role === 'client' ? 'inline-flex' : 'none';
+            }
+
+            if (tab === 'rfqs') {
+                await loadRfqs();
+            } else if (tab === 'invoices') {
+                await loadInvoices();
+            } else if (tab === 'analytics') {
+                await loadAnalytics();
             }
         }
 
         // Load Services
-        async function loadServices(category = 'all', search = '') {
+        async function loadServices(category = 'all', search = '', mineOnly = false) {
             try {
-                let url = '/api/services/';
+                let url = mineOnly ? '/api/services/my_services/' : '/api/services/';
                 const params = new URLSearchParams();
                 
                 if (category && category !== 'all') {
@@ -1509,20 +2653,20 @@
             const grid = document.getElementById('servicesGrid');
             
             if (servicesData.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; color: #64748b; padding: 3rem;">No services found.</p>';
+                grid.innerHTML = '<p class="empty-state">No services found.</p>';
                 return;
             }
             
             grid.innerHTML = servicesData.map(service => `
                 <div class="service-card" onclick="openServiceDetail(${service.id})">
                     <div class="service-header">
-                        <div class="service-category">${service.category.toUpperCase()}</div>
+                        <div class="service-category">${getDisplayCategory(service).toUpperCase()}</div>
                         <h3>${service.title}</h3>
                         <div class="service-provider">
                             <div class="provider-avatar">${service.provider_initials}</div>
                             <div>
                                 <div>${service.provider_name}</div>
-                                <div style="font-size: 0.85em; opacity: 0.9;">📍 ${service.provider_location || 'Zimbabwe'}</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">Location: ${service.provider_location || 'Zimbabwe'}</div>
                             </div>
                         </div>
                     </div>
@@ -1530,14 +2674,15 @@
                         <p class="service-description">${service.description}</p>
                         <div class="service-meta">
                             <div class="rating">
-                                ${'⭐'.repeat(Math.floor(service.average_rating || 0))}
-                                <span style="color: #cbd5e1; margin-left: 5px;">${service.average_rating || 0} (${service.review_count || 0})</span>
+                                ${Array.from({ length: Math.floor(service.average_rating || 0) }, () => '&#9733;').join('')}
+                                <span class="muted-text" style="margin-left: 5px;">${service.average_rating || 0} (${service.review_count || 0})</span>
                             </div>
                             <div class="price">$${service.price_per_hour}/hr</div>
                         </div>
                     </div>
                     <div class="service-footer">
                         <button class="btn-primary" onclick="event.stopPropagation(); contactProvider(${service.id})">Contact</button>
+                        ${currentUser.role === 'client' ? `<button class="btn-secondary" onclick="event.stopPropagation(); openRfqModal(${service.id})">Send RFQ</button>` : ''}
                         <button class="btn-secondary" onclick="event.stopPropagation(); openServiceDetail(${service.id})">View Details</button>
                     </div>
                 </div>
@@ -1642,7 +2787,7 @@
 
             if (servicesData.length === 0) {
 
-                grid.innerHTML = '<p style="text-align: center; color: #64748b; padding: 3rem;">No jobs found.</p>';
+                grid.innerHTML = '<p class="empty-state">No jobs found.</p>';
 
                 return;
 
@@ -1690,7 +2835,7 @@
 
                     <div class="service-card" onclick="openJobDetail(${job.id})">
 
-                        <div class="service-header" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));">
+                        <div class="service-header job-card-header">
 
                             <div class="service-category" style="background: ${statusStyle.bg}; color: ${statusStyle.text}; border: 1px solid ${statusStyle.text}">${statusStyle.label}</div>
 
@@ -1704,7 +2849,7 @@
 
                                     <div>${job.client_name}</div>
 
-                                    <div style="font-size: 0.85em; opacity: 0.9;">dY"? ${job.location || 'Zimbabwe'}</div>
+                                    <div style="font-size: 0.85em; opacity: 0.9;">Location: ${job.location || 'Zimbabwe'}</div>
 
                                 </div>
 
@@ -1718,11 +2863,11 @@
 
                             <div class="service-meta">
 
-                                <div style="color: #cbd5e1; font-size: 0.9em;">
+                                <div class="muted-text" style="font-size: 0.9em;">
 
-                                    <div>dY"? ${job.category.toUpperCase()}</div>
+                                    <div><div class="meta-label">Category</div>${getDisplayCategory(job)}</div>
 
-                                    <div style="margin-top: 0.5rem;">dY". ${deadline}</div>
+                                    <div style="margin-top: 0.75rem;"><div class="meta-label">Deadline</div>${deadline}</div>
 
                                     <div style="margin-top: 0.5rem; font-size: 0.8em; opacity: 0.7;">${postedText}</div>
 
@@ -1817,20 +2962,17 @@
         function filterServices(category) {
 
             currentFilter = category;
-
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-
-            if (window.event && window.event.target) {
-
-                window.event.target.classList.add('active');
-
-            }
+            setActiveCategoryFilter();
 
 
 
             if (currentUser.role === 'client' && clientContentMode === 'services') {
 
                 loadServices(category, document.getElementById('searchInput').value);
+
+            } else if (currentUser.role === 'provider') {
+
+                loadServices(category, document.getElementById('searchInput').value, providerContentMode === 'mine');
 
             } else {
 
@@ -1851,6 +2993,10 @@
 
                 loadServices(currentFilter, query);
 
+            } else if (currentUser.role === 'provider') {
+
+                loadServices(currentFilter, query, providerContentMode === 'mine');
+
             } else {
 
                 jobFilters.location = query;
@@ -1867,20 +3013,27 @@
                 const response = await fetch(`/api/services/${serviceId}/`);
                 const service = await response.json();
                 
-                document.getElementById('modalCategory').textContent = service.category.toUpperCase();
+                document.getElementById('modalCategory').textContent = getDisplayCategory(service).toUpperCase();
                 document.getElementById('modalTitle').textContent = service.title;
                 document.getElementById('modalProviderAvatar').textContent = service.provider_initials;
                 document.getElementById('modalProviderName').textContent = service.provider_name;
-                document.getElementById('modalProviderLocation').textContent = '📍 ' + (service.provider_location || 'Zimbabwe');
+                document.getElementById('modalProviderLocation').textContent = 'Location: ' + (service.provider_location || 'Zimbabwe');
                 document.getElementById('modalProfileAvatar').textContent = service.provider_initials;
                 document.getElementById('modalProfileName').textContent = service.provider_name;
-                document.getElementById('modalRatingStars').innerHTML = '⭐'.repeat(Math.floor(service.average_rating || 0));
+                document.getElementById('modalRatingStars').innerHTML = Array.from({ length: Math.floor(service.average_rating || 0) }, () => '&#9733;').join('');
                 document.getElementById('modalRatingText').textContent = `${service.average_rating || 0} (${service.review_count || 0} reviews)`;
                 document.getElementById('modalJobsCompleted').textContent = service.jobs_completed || 0;
                 document.getElementById('modalResponseTime').textContent = service.response_time || '24h';
                 document.getElementById('modalExperience').textContent = `${service.experience_years || 0}yrs`;
                 document.getElementById('modalDescription').textContent = service.description;
                 document.getElementById('modalPrice').textContent = `$${service.price_per_hour}/hour`;
+
+                const leaveReviewBtn = document.getElementById('leaveReviewBtn');
+                if (leaveReviewBtn) {
+                    const canReview = service.provider !== currentUser.id;
+                    leaveReviewBtn.style.display = canReview ? 'inline-flex' : 'none';
+                    leaveReviewBtn.onclick = () => openReviewModal(service.id, service.title);
+                }
                 
                 // Render reviews
                 const commentsContainer = document.getElementById('commentsContainer');
@@ -1890,9 +3043,9 @@
                             <div class="comment-header">
                                 <span class="comment-author">${review.reviewer_name}</span>
                                 <div class="comment-rating">
-                                    ${'⭐'.repeat(review.rating)}
+                                    ${Array.from({ length: review.rating }, () => '&#9733;').join('')}
                                     <span class="sentiment-badge sentiment-${review.sentiment}">
-                                        ${review.sentiment === 'positive' ? '😊 Positive' : review.sentiment === 'neutral' ? '😐 Neutral' : '😞 Negative'}
+                                        ${review.sentiment === 'positive' ? 'Positive' : review.sentiment === 'neutral' ? 'Neutral' : 'Negative'}
                                     </span>
                                 </div>
                             </div>
@@ -1901,7 +3054,7 @@
                         </div>
                     `).join('');
                 } else {
-                    commentsContainer.innerHTML = '<p style="color: #64748b;">No reviews yet.</p>';
+                    commentsContainer.innerHTML = '<p class="empty-state">No reviews yet.</p>';
                 }
                 
                 document.getElementById('serviceModal').classList.add('show');
@@ -1931,6 +3084,641 @@
                 );
             } else {
                 alert('Messaging system is loading. Please try again.');
+            }
+        }
+
+        async function loadRfqs() {
+            try {
+                const direction = currentUser.role === 'provider' ? 'received' : 'sent';
+                const response = await fetch(`/api/rfqs/?direction=${direction}`);
+                const data = await response.json();
+                rfqData = Array.isArray(data) ? data : (data.results || []);
+                renderRfqs();
+            } catch (error) {
+                console.error('Error loading RFQs:', error);
+            }
+        }
+
+        function renderRfqs() {
+            const container = document.getElementById('rfqContent');
+            if (!rfqData.length) {
+                container.innerHTML = `<p class="empty-state">${currentUser.role === 'provider' ? 'No RFQs received yet.' : 'No RFQs sent yet. Open a service and send your first RFQ.'}</p>`;
+                return;
+            }
+
+            container.innerHTML = rfqData.map(rfq => `
+                <div class="service-card">
+                    <div class="service-header job-card-header">
+                        <div class="service-category">${rfq.status.toUpperCase()}</div>
+                        <h3>${rfq.title}</h3>
+                        <div class="service-provider">
+                            <div class="provider-avatar">${(currentUser.role === 'provider' ? rfq.client_name : rfq.provider_name).split(' ').map(n => n[0]).join('')}</div>
+                            <div>
+                                <div>${currentUser.role === 'provider' ? rfq.client_name : rfq.provider_name}</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">${rfq.service_title}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="service-body">
+                        <p class="service-description">${rfq.requirements}</p>
+                        <div class="service-meta">
+                            <div class="muted-text">
+                                <div><div class="meta-label">Quantity</div>${rfq.quantity}</div>
+                                <div style="margin-top: 0.75rem;"><div class="meta-label">Target Budget</div>${rfq.target_budget ? `$${rfq.target_budget}` : 'Not set'}</div>
+                            </div>
+                            <div class="price">${rfq.invoice_count || 0} invoices</div>
+                        </div>
+                    </div>
+                    <div class="service-footer">
+                        ${currentUser.role === 'provider' ? `<button class="btn-primary" onclick="openInvoiceModal(${rfq.id})">Create Invoice</button>` : `<button class="btn-primary" onclick="openRfqConversation(${rfq.id})">Message Provider</button>`}
+                        <button class="btn-secondary" onclick="openRfqThread(${rfq.id})">View RFQ</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function openRfqModal(serviceId = '') {
+            const select = document.getElementById('rfqServiceSelect');
+            let availableServices = Array.isArray(servicesData) ? servicesData.filter(item => item.provider_name) : [];
+            if (!availableServices.length) {
+                const response = await fetch('/api/services/');
+                const data = await response.json();
+                availableServices = Array.isArray(data) ? data : (data.results || []);
+            }
+            select.innerHTML = '<option value="">Select a service</option>';
+            availableServices.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = `${service.title} - ${service.provider_name}`;
+                if (String(serviceId) === String(service.id)) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            document.getElementById('rfqForm').reset();
+            if (serviceId) {
+                select.value = String(serviceId);
+            }
+            document.getElementById('rfqModal').classList.add('show');
+        }
+
+        async function submitRfq(event) {
+            event.preventDefault();
+            const payload = {
+                service: Number(document.getElementById('rfqServiceSelect').value),
+                title: document.getElementById('rfqTitle').value.trim(),
+                requirements: document.getElementById('rfqRequirements').value.trim(),
+                quantity: Number(document.getElementById('rfqQuantity').value || 1),
+                preferred_start_date: document.getElementById('rfqPreferredDate').value || null,
+            };
+            const budgetValue = document.getElementById('rfqBudget').value;
+            if (budgetValue) {
+                payload.target_budget = budgetValue;
+            }
+
+            try {
+                const response = await fetch('/api/rfqs/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const errorText = typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Unable to send RFQ.';
+                    alert(errorText);
+                    return;
+                }
+                closeModal('rfqModal');
+                await loadRfqs();
+                await loadAnalytics();
+                alert('RFQ sent successfully.');
+            } catch (error) {
+                console.error('Error submitting RFQ:', error);
+                alert('Unable to send RFQ right now.');
+            }
+        }
+
+        function openRfqThread(rfqId) {
+            const rfq = rfqData.find(item => item.id === rfqId);
+            if (!rfq) {
+                return;
+            }
+            alert(`RFQ: ${rfq.title}\n\nService: ${rfq.service_title}\n\nRequirements:\n${rfq.requirements}`);
+        }
+
+        function openRfqConversation(rfqId) {
+            const rfq = rfqData.find(item => item.id === rfqId);
+            if (!rfq || typeof messagingModule === 'undefined') {
+                return;
+            }
+            messagingModule.openContactModal(
+                rfq.service,
+                rfq.service_title,
+                rfq.provider,
+                rfq.provider_name,
+                rfq.provider_name.split(' ').map(n => n[0]).join('')
+            );
+        }
+
+        async function loadInvoices() {
+            try {
+                const response = await fetch('/api/invoices/');
+                const data = await response.json();
+                invoiceData = Array.isArray(data) ? data : (data.results || []);
+                renderInvoices();
+            } catch (error) {
+                console.error('Error loading invoices:', error);
+            }
+        }
+
+        function renderInvoices() {
+            const container = document.getElementById('invoiceContent');
+            if (!invoiceData.length) {
+                container.innerHTML = `<p class="empty-state">${currentUser.role === 'provider' ? 'No invoices created yet.' : 'No invoices received yet.'}</p>`;
+                return;
+            }
+
+            container.innerHTML = invoiceData.map(invoice => `
+                <div class="service-card">
+                    <div class="service-header job-card-header">
+                        <div class="service-category">${invoice.status.toUpperCase()}</div>
+                        <h3>${invoice.title}</h3>
+                        <div class="service-provider">
+                            <div class="provider-avatar">${(currentUser.role === 'provider' ? invoice.client_name : invoice.provider_name).split(' ').map(n => n[0]).join('')}</div>
+                            <div>
+                                <div>${currentUser.role === 'provider' ? invoice.client_name : invoice.provider_name}</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">${invoice.rfq_title || invoice.service_title || 'Invoice'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="service-body">
+                        <p class="service-description">${invoice.scope_of_work}</p>
+                        <div class="service-meta">
+                            <div class="muted-text">
+                                <div><div class="meta-label">Subtotal</div>$${invoice.subtotal}</div>
+                                <div style="margin-top: 0.75rem;"><div class="meta-label">Tax</div>$${invoice.tax_amount}</div>
+                            </div>
+                            <div class="price">$${invoice.total_amount}</div>
+                        </div>
+                    </div>
+                    <div class="service-footer">
+                        ${currentUser.role === 'client' && invoice.status === 'sent' ? `<button class="btn-primary" onclick="acceptInvoice(${invoice.id})">Accept</button>` : ''}
+                        ${currentUser.role === 'client' && invoice.status === 'accepted' ? `<button class="btn-primary" onclick="markInvoicePaid(${invoice.id})">Mark Paid</button>` : ''}
+                        <button class="btn-secondary" onclick="viewInvoice(${invoice.id})">View Invoice</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openInvoiceModal(rfqId) {
+            const rfq = rfqData.find(item => item.id === rfqId);
+            if (!rfq) {
+                alert('RFQ not found.');
+                return;
+            }
+            document.getElementById('invoiceForm').reset();
+            document.getElementById('invoiceRfqId').value = rfq.id;
+            document.getElementById('invoiceTitle').value = `Quote for ${rfq.title}`;
+            document.getElementById('invoiceScope').value = rfq.requirements;
+            document.getElementById('invoiceSubtotal').value = rfq.target_budget || '';
+            document.getElementById('invoiceModal').classList.add('show');
+        }
+
+        async function submitInvoice(event) {
+            event.preventDefault();
+            const payload = {
+                rfq: Number(document.getElementById('invoiceRfqId').value),
+                title: document.getElementById('invoiceTitle').value.trim(),
+                scope_of_work: document.getElementById('invoiceScope').value.trim(),
+                line_items: document.getElementById('invoiceLineItems').value.trim(),
+                subtotal: document.getElementById('invoiceSubtotal').value,
+                tax_amount: document.getElementById('invoiceTax').value || 0,
+                due_date: document.getElementById('invoiceDueDate').value || null,
+                notes: document.getElementById('invoiceNotes').value.trim(),
+            };
+
+            try {
+                const response = await fetch('/api/invoices/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const errorText = typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Unable to send invoice.';
+                    alert(errorText);
+                    return;
+                }
+                closeModal('invoiceModal');
+                await loadInvoices();
+                await loadRfqs();
+                await loadAnalytics();
+                alert('Invoice sent successfully.');
+            } catch (error) {
+                console.error('Error creating invoice:', error);
+                alert('Unable to send invoice right now.');
+            }
+        }
+
+        async function acceptInvoice(invoiceId) {
+            await postInvoiceAction(invoiceId, 'accept', 'Invoice accepted.');
+        }
+
+        async function markInvoicePaid(invoiceId) {
+            await postInvoiceAction(invoiceId, 'mark_paid', 'Invoice marked as paid.');
+        }
+
+        async function postInvoiceAction(invoiceId, action, successMessage) {
+            try {
+                const response = await fetch(`/api/invoices/${invoiceId}/${action}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Unable to update invoice.');
+                    return;
+                }
+                await loadInvoices();
+                await loadRfqs();
+                await loadAnalytics();
+                alert(successMessage);
+            } catch (error) {
+                console.error('Error updating invoice:', error);
+                alert('Unable to update invoice right now.');
+            }
+        }
+
+        function viewInvoice(invoiceId) {
+            const invoice = invoiceData.find(item => item.id === invoiceId);
+            if (!invoice) {
+                return;
+            }
+            alert(`Invoice: ${invoice.title}\n\nScope:\n${invoice.scope_of_work}\n\nLine Items:\n${invoice.line_items || 'No breakdown added'}\n\nTotal: $${invoice.total_amount}`);
+        }
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/api/analytics/');
+                const analytics = await response.json();
+                renderAnalytics(analytics);
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        function renderAnalytics(analytics) {
+            const cards = document.getElementById('analyticsContent');
+            const breakdown = document.getElementById('analyticsBreakdown');
+            cards.innerHTML = `
+                <div class="stat-card">
+                    <h3>${analytics.rfqs_total || 0}</h3>
+                    <p>${currentUser.role === 'provider' ? 'RFQs Received' : 'RFQs Sent'}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${analytics.invoices_total || 0}</h3>
+                    <p>${currentUser.role === 'provider' ? 'Invoices Sent' : 'Invoices Received'}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${analytics.customers_sent_rfq_count || 0}</h3>
+                    <p>Customers Sending RFQs</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$${Number(analytics.pricing?.average || 0).toFixed(2)}</h3>
+                    <p>Average Invoice Total</p>
+                </div>
+            `;
+
+            const requestedServices = analytics.services_most_requested || [];
+            const sharedServices = analytics.shared_services_most_requested || [];
+            breakdown.innerHTML = `
+                <div class="service-card">
+                    <div class="service-header job-card-header">
+                        <h3>Your Most Requested Services</h3>
+                    </div>
+                    <div class="service-body">
+                        ${requestedServices.length ? requestedServices.map(item => `<p class="service-description"><strong>${item.service__title || 'Unknown Service'}</strong>: ${item.rfq_count} RFQs</p>`).join('') : '<p class="empty-state">No RFQ demand tracked yet.</p>'}
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="service-header job-card-header">
+                        <h3>Shared Pricing & Demand</h3>
+                    </div>
+                    <div class="service-body">
+                        <p class="service-description"><strong>Lowest invoice:</strong> $${Number(analytics.shared_pricing?.minimum || 0).toFixed(2)}</p>
+                        <p class="service-description"><strong>Highest invoice:</strong> $${Number(analytics.shared_pricing?.maximum || 0).toFixed(2)}</p>
+                        ${sharedServices.slice(0, 3).map(item => `<p class="service-description"><strong>${item.service__title || 'Unknown Service'}</strong>: ${item.rfq_count} RFQs</p>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function refreshDashboardAlerts() {
+            await Promise.all([
+                refreshMessageBadge(),
+                loadNotifications(false)
+            ]);
+        }
+
+        function startDashboardPolling() {
+            if (window.dashboardPollingStarted) {
+                return;
+            }
+            window.dashboardPollingStarted = true;
+            window.setInterval(() => {
+                refreshDashboardAlerts();
+            }, 10000);
+        }
+
+        async function refreshMessageBadge() {
+            try {
+                const response = await fetch('/api/messages/unread_count/');
+                const data = await response.json();
+                const badge = document.getElementById('messagesBadge');
+                const unreadCount = data.unread || 0;
+                badge.textContent = unreadCount;
+                badge.classList.toggle('show', unreadCount > 0);
+            } catch (error) {
+                console.error('Error loading unread messages count:', error);
+            }
+        }
+
+        async function loadNotifications(showDropdown = false) {
+            try {
+                const [countResponse, listResponse] = await Promise.all([
+                    fetch('/api/notifications/unread_count/'),
+                    fetch('/api/notifications/')
+                ]);
+                const countData = await countResponse.json();
+                const notifications = await listResponse.json();
+                const unreadCount = countData.unread || 0;
+                const badge = document.getElementById('notificationsBadge');
+                badge.textContent = unreadCount;
+                badge.classList.toggle('show', unreadCount > 0);
+
+                const notificationList = Array.isArray(notifications)
+                    ? notifications
+                    : (notifications.results || []);
+                const list = document.getElementById('notificationsList');
+                if (notificationList.length === 0) {
+                    list.innerHTML = '<p class="empty-state" style="margin: 12px;">No notifications yet.</p>';
+                } else {
+                    list.innerHTML = notificationList.slice(0, 8).map(notification => `
+                        <div class="notification-item ${notification.is_read ? '' : 'unread'}">
+                            <strong>${notification.title}</strong>
+                            <div>${notification.description}</div>
+                        </div>
+                    `).join('');
+                }
+
+                if (showDropdown) {
+                    document.getElementById('notificationsDropdown').classList.add('show');
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        async function toggleNotificationsDropdown() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const willShow = !dropdown.classList.contains('show');
+            if (willShow) {
+                await loadNotifications(true);
+            } else {
+                dropdown.classList.remove('show');
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await fetch('/api/notifications/mark_all_read/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                });
+                await loadNotifications(true);
+            } catch (error) {
+                console.error('Error marking notifications as read:', error);
+            }
+        }
+
+        async function openInboxPanel() {
+            document.getElementById('inboxModal').classList.add('show');
+            document.getElementById('inboxModalBody').innerHTML = '<p class="muted-text">Loading conversations...</p>';
+            await loadInboxConversations();
+        }
+
+        async function loadInboxConversations() {
+            try {
+                const response = await fetch('/api/messages/conversations/');
+                const conversations = await response.json();
+                const list = document.getElementById('inboxModalList');
+                if (!Array.isArray(conversations) || conversations.length === 0) {
+                    list.innerHTML = '<p class="empty-state" style="margin: 1rem;">No conversations yet.</p>';
+                    document.getElementById('inboxModalBody').innerHTML = '<p class="muted-text">Start by using the Contact button on a service card.</p>';
+                    await refreshMessageBadge();
+                    return;
+                }
+
+                list.innerHTML = conversations.map(conversation => `
+                    <button type="button" class="conversation-card ${conversation.is_unread ? 'unread' : ''}" style="width: 100%; text-align: left;" onclick='openConversationFromInbox(${JSON.stringify(conversation).replace(/'/g, "&apos;")})'>
+                        <div class="conversation-header">
+                            <strong>${conversation.user_name}</strong>
+                            <span>${new Date(conversation.timestamp).toLocaleDateString()}</span>
+                        </div>
+                        <div class="conversation-preview">${conversation.latest_message}</div>
+                    </button>
+                `).join('');
+                await refreshMessageBadge();
+            } catch (error) {
+                console.error('Error loading inbox conversations:', error);
+                document.getElementById('inboxModalList').innerHTML = '<p class="empty-state" style="margin: 1rem;">Unable to load conversations.</p>';
+            }
+        }
+
+        function openConversationFromInbox(conversation) {
+            closeModal('inboxModal');
+            if (typeof messagingModule !== 'undefined') {
+                messagingModule.openConversationFromInbox(conversation);
+                setTimeout(() => refreshDashboardAlerts(), 500);
+            }
+        }
+
+        async function openReviewModal(serviceId, serviceTitle = '', selectedJobId = '') {
+            document.getElementById('reviewServiceId').value = serviceId;
+            document.getElementById('reviewForm').dataset.serviceTitle = serviceTitle;
+            document.getElementById('reviewRating').value = '';
+            document.getElementById('reviewComment').value = '';
+            const jobSelect = document.getElementById('reviewJobSelect');
+            jobSelect.innerHTML = '<option value="">General service feedback</option>';
+
+            const endpoint = currentUser.role === 'provider'
+                ? `/api/jobs/assigned_jobs/?status=completed&service=${serviceId}`
+                : `/api/jobs/my_jobs/?status=completed&service=${serviceId}`;
+
+            try {
+                const response = await fetch(endpoint);
+                const jobs = await response.json();
+                const jobList = Array.isArray(jobs) ? jobs : (jobs.results || []);
+                jobList.forEach(job => {
+                    const option = document.createElement('option');
+                    option.value = job.id;
+                    option.textContent = `${job.title} (${job.location})`;
+                    if (selectedJobId && Number(selectedJobId) === Number(job.id)) {
+                        option.selected = true;
+                    }
+                    jobSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading review jobs:', error);
+            }
+
+            document.getElementById('reviewModal').classList.add('show');
+        }
+
+        async function submitReview(event) {
+            event.preventDefault();
+            const serviceId = document.getElementById('reviewServiceId').value;
+            const rating = document.getElementById('reviewRating').value;
+            const comment = document.getElementById('reviewComment').value.trim();
+            const jobId = document.getElementById('reviewJobSelect').value;
+
+            if (!rating) {
+                alert('Please select a rating.');
+                return;
+            }
+
+            if (!comment) {
+                alert('Please add a comment with your rating.');
+                return;
+            }
+
+            const payload = {
+                service: serviceId,
+                rating: Number(rating),
+                comment: comment
+            };
+            if (jobId) {
+                payload.job = Number(jobId);
+            }
+
+            try {
+                const response = await fetch('/api/reviews/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const errorText = typeof data === 'object'
+                        ? Object.values(data).flat().join(' ')
+                        : 'Unable to submit review.';
+                    alert(errorText);
+                    return;
+                }
+                closeModal('reviewModal');
+                await openServiceDetail(Number(serviceId));
+                await loadStats();
+                alert('Your rating and comment were submitted.');
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert('Unable to submit review right now.');
+            }
+        }
+
+        async function openJobDetail(jobId) {
+            try {
+                const response = await fetch(`/api/jobs/${jobId}/`);
+                const job = await response.json();
+                const modalBody = document.getElementById('jobDetailBody');
+                const statusLabel = job.status.replace('_', ' ');
+                document.getElementById('jobDetailStatus').textContent = statusLabel.toUpperCase();
+                document.getElementById('jobDetailTitle').textContent = job.title;
+                document.getElementById('jobDetailClient').textContent = `${job.client_name} • ${job.location}`;
+
+                const canLeaveReview = job.status === 'completed' && job.assigned_provider && job.service && currentUser.role === 'client';
+                const reviewAction = canLeaveReview
+                    ? `<button class="btn-primary" onclick="openReviewModal(${job.service || 0}, '${job.title.replace(/'/g, "\\'")}', ${job.id})">Rate & Comment</button>`
+                    : '';
+
+                modalBody.innerHTML = `
+                    <div style="display: grid; gap: 1rem;">
+                        <div><div class="meta-label">Category</div><p class="muted-text">${getDisplayCategory(job)}</p></div>
+                        <div><div class="meta-label">Description</div><p class="muted-text">${job.description}</p></div>
+                        <div><div class="meta-label">Budget</div><p class="accent-text">$${job.budget}</p></div>
+                        <div><div class="meta-label">Deadline</div><p class="muted-text">${job.deadline || 'No deadline'}</p></div>
+                        <div><div class="meta-label">Assigned Provider</div><p class="muted-text">${job.provider_name || 'Not assigned yet'}</p></div>
+                        ${reviewAction ? `<div class="form-actions" style="justify-content: flex-start;">${reviewAction}</div>` : ''}
+                    </div>
+                `;
+                document.getElementById('jobDetailModal').classList.add('show');
+            } catch (error) {
+                console.error('Error loading job details:', error);
+                alert('Unable to load job details right now.');
+            }
+        }
+
+        async function openBidModal(jobId) {
+            try {
+                const response = await fetch(`/api/jobs/${jobId}/`);
+                const job = await response.json();
+                document.getElementById('bidJobId').value = job.id;
+                document.getElementById('bidJobTitle').textContent = job.title;
+                document.getElementById('bidForm').reset();
+                document.getElementById('bidJobId').value = job.id;
+                document.getElementById('bidModal').classList.add('show');
+            } catch (error) {
+                console.error('Error loading bid modal:', error);
+                alert('Unable to open bid form right now.');
+            }
+        }
+
+        async function submitBid(event) {
+            event.preventDefault();
+            const payload = {
+                job: Number(document.getElementById('bidJobId').value),
+                amount: document.getElementById('bidAmount').value,
+                timeline: document.getElementById('bidTimeline').value,
+                proposal_message: document.getElementById('bidMessage').value.trim()
+            };
+
+            try {
+                const response = await fetch('/api/bids/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const errorText = typeof data === 'object'
+                        ? Object.values(data).flat().join(' ')
+                        : 'Unable to submit bid.';
+                    alert(errorText);
+                    return;
+                }
+                closeModal('bidModal');
+                alert('Bid submitted successfully.');
+                await loadAndRenderContent();
+                await refreshDashboardAlerts();
+            } catch (error) {
+                console.error('Error submitting bid:', error);
+                alert('Unable to submit bid right now.');
             }
         }
 
@@ -1973,25 +3761,34 @@
                 toggle.classList.add('active');
                 modeLabel.textContent = 'Provider Mode';
                 userRole.textContent = 'Service Provider';
-                welcomeMessage.textContent = `Welcome back, ${currentUser.firstName}! 🛠️`;
-                dashboardSubtitle.textContent = 'Manage your services and view job opportunities';
-                sectionTitle.textContent = 'Available Jobs';
-                postJobBtn.innerHTML = '📋 My Services';
-                postJobBtn.onclick = function() { alert('Manage services - Coming soon!'); };
+                welcomeMessage.textContent = `Welcome back, ${currentUser.firstName}`;
+                dashboardSubtitle.textContent = providerContentMode === 'mine'
+                    ? 'Review the services you already offer and keep them client-ready'
+                    : 'Browse the marketplace view and compare your listings with others';
+                sectionTitle.textContent = providerContentMode === 'mine' ? 'My Services' : 'Available Services';
+                postJobBtn.innerHTML = providerContentMode === 'mine'
+                    ? '<span class="button-with-icon"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"></path><path d="M12 4l8 8-8 8"></path></svg></span><span>Browse Services</span></span>'
+                    : '<span class="button-with-icon"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"></path><path d="M9 12h11"></path><path d="M9 18h11"></path><path d="M4 6h.01"></path><path d="M4 12h.01"></path><path d="M4 18h.01"></path></svg></span><span>My Services</span></span>';
+                postJobBtn.onclick = async function() {
+                    providerContentMode = providerContentMode === 'mine' ? 'all' : 'mine';
+                    updateUserInterface();
+                    await loadAndRenderContent();
+                };
             } else {
                 toggle.classList.remove('active');
                 modeLabel.textContent = 'Client Mode';
                 userRole.textContent = 'Client';
-                welcomeMessage.textContent = `Welcome back, ${currentUser.firstName}! 👋`;
+                welcomeMessage.textContent = `Welcome back, ${currentUser.firstName}`;
                 dashboardSubtitle.textContent = 'Find skilled workers for your next project';
                 sectionTitle.textContent = 'Available Services';
-                postJobBtn.innerHTML = '➕ Post a Job';
+                postJobBtn.innerHTML = '<span class="button-with-icon"><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></span><span>Post a Job</span></span>';
                 postJobBtn.onclick = openPostJobModal;
             }
         }
 
         // Open Post Job Modal
         function openPostJobModal() {
+            populateJobCategoryOptions();
             document.getElementById('postJobModal').classList.add('show');
         }
 
@@ -2006,16 +3803,24 @@
             
             const formData = new FormData(event.target);
             const budget = parseFloat(formData.get('budget'));
+            const categoryRef = formData.get('category_ref');
+            const selectedCategory = categoryById[categoryRef];
             
             // Validate budget
             if (isNaN(budget) || budget <= 0) {
                 alert('Please enter a valid budget amount');
                 return;
             }
+
+            if (!categoryRef || !selectedCategory) {
+                alert('Please select a valid category');
+                return;
+            }
             
             const data = {
                 title: formData.get('title'),
-                category: formData.get('category'),
+                category: selectedCategory.slug,
+                category_ref: Number(categoryRef),
                 description: formData.get('description'),
                 budget: budget.toFixed(2),
                 location: formData.get('location'),
@@ -2058,6 +3863,11 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const notificationsButton = document.getElementById('notificationsButton');
+            if (notificationsDropdown && notificationsButton && !notificationsDropdown.contains(event.target) && !notificationsButton.contains(event.target)) {
+                notificationsDropdown.classList.remove('show');
+            }
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('show');
             }
@@ -2066,3 +3876,4 @@
     <script src="{% static 'js/messaging.js' %}"></script>
 </body>
 </html>
+

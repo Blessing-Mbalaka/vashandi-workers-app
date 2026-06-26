@@ -8,7 +8,10 @@ router.register(r'jobs', views.JobViewSet, basename='job')
 router.register(r'reviews', views.ReviewViewSet, basename='review')
 router.register(r'messages', views.MessageViewSet, basename='message')
 router.register(r'bids', views.BidViewSet, basename='bid')
+router.register(r'rfqs', views.RFQViewSet, basename='rfq')
+router.register(r'invoices', views.InvoiceViewSet, basename='invoice')
 router.register(r'notifications', views.NotificationViewSet, basename='notification')
+router.register(r'categories', views.TradeCategoryViewSet, basename='category')
 
 urlpatterns = [
     # Template views
@@ -24,4 +27,5 @@ urlpatterns = [
     path('api/user/', views.current_user_api, name='api-current-user'),
     path('api/toggle-role/', views.toggle_role_api, name='api-toggle-role'),
     path('api/stats/', views.dashboard_stats_api, name='api-stats'),
+    path('api/analytics/', views.analytics_api, name='api-analytics'),
 ]

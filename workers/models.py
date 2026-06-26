@@ -28,19 +28,34 @@ class User(AbstractUser):
         return f"{self.get_full_name()} ({self.current_role})"
 
 
+class TradeCategory(models.Model):
+    """Admin-managed trade and subtrade taxonomy."""
+
+    name = models.CharField(max_length=120)
+    slug = models.SlugField(max_length=140, unique=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='children')
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+        verbose_name_plural = 'Trade categories'
+
+    def __str__(self):
+        if self.parent:
+            return f"{self.parent.name} > {self.name}"
+        return self.name
+
+    @property
+    def trade_name(self):
+        return self.parent.name if self.parent else self.name
+
+
 class Service(models.Model):
     """Service offerings by providers"""
-    CATEGORY_CHOICES = [
-        ('plumbing', 'Plumbing'),
-        ('electrical', 'Electrical'),
-        ('carpentry', 'Carpentry'),
-        ('painting', 'Painting'),
-        ('masonry', 'Masonry'),
-        ('gardening', 'Gardening'),
-    ]
-    
     provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='services')
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=100)
+    category_ref = models.ForeignKey(TradeCategory, null=True, blank=True, on_delete=models.SET_NULL, related_name='services')
     title = models.CharField(max_length=200)
     description = models.TextField()
     price_per_hour = models.DecimalField(max_digits=10, decimal_places=2)
@@ -55,6 +70,13 @@ class Service(models.Model):
     
     def __str__(self):
         return f"{self.title} by {self.provider.get_full_name()}"
+
+    def save(self, *args, **kwargs):
+        if self.category_ref:
+            self.category = self.category_ref.slug
+        elif self.category and not self.category_ref_id:
+            self.category_ref = TradeCategory.objects.filter(slug=self.category).first()
+        super().save(*args, **kwargs)
     
     @property
     def average_rating(self):
@@ -81,14 +103,13 @@ class Job(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
-    CATEGORY_CHOICES = Service.CATEGORY_CHOICES
-    
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posted_jobs')
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True, related_name='jobs')
     assigned_provider = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_jobs')
     
     title = models.CharField(max_length=200)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=100)
+    category_ref = models.ForeignKey(TradeCategory, null=True, blank=True, on_delete=models.SET_NULL, related_name='jobs')
     description = models.TextField()
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     location = models.CharField(max_length=100)
@@ -103,6 +124,13 @@ class Job(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.client.get_full_name()}"
+
+    def save(self, *args, **kwargs):
+        if self.category_ref:
+            self.category = self.category_ref.slug
+        elif self.category and not self.category_ref_id:
+            self.category_ref = TradeCategory.objects.filter(slug=self.category).first()
+        super().save(*args, **kwargs)
 
 
 class Review(models.Model):
@@ -190,6 +218,80 @@ class Bid(models.Model):
         return f"Bid by {self.provider.get_full_name()} on {self.job.title}"
 
 
+class RFQ(models.Model):
+    """Request for quote sent by a client to a provider."""
+
+    STATUS_CHOICES = [
+        ('submitted', 'Submitted'),
+        ('reviewed', 'Reviewed'),
+        ('quoted', 'Quoted'),
+        ('accepted', 'Accepted'),
+        ('closed', 'Closed'),
+    ]
+
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rfqs_sent')
+    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rfqs_received')
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='rfqs')
+    title = models.CharField(max_length=200)
+    requirements = models.TextField()
+    quantity = models.PositiveIntegerField(default=1)
+    target_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    preferred_start_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='submitted')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"RFQ {self.title} from {self.client.get_full_name()} to {self.provider.get_full_name()}"
+
+
+class Invoice(models.Model):
+    """Invoice or quote generated by a provider for a client."""
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('sent', 'Sent'),
+        ('accepted', 'Accepted'),
+        ('paid', 'Paid'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices_created')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices_received')
+    rfq = models.ForeignKey(RFQ, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True, related_name='invoices')
+    title = models.CharField(max_length=200)
+    scope_of_work = models.TextField()
+    line_items = models.TextField(blank=True)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), validators=[MinValueValidator(Decimal('0.00'))])
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
+    notes = models.TextField(blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='sent')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        self.total_amount = (self.subtotal or Decimal('0.00')) + (self.tax_amount or Decimal('0.00'))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Invoice {self.title} for {self.client.get_full_name()}"
+
+
 class Notification(models.Model):
     """System notifications for users"""
 
@@ -197,11 +299,15 @@ class Notification(models.Model):
     BID = 'bid'
     STATUS = 'status_change'
     REVIEW = 'review'
+    RFQ = 'rfq'
+    INVOICE = 'invoice'
     NOTIFICATION_TYPES = [
         (MESSAGE, 'Message'),
         (BID, 'Bid'),
         (STATUS, 'Status Change'),
         (REVIEW, 'Review'),
+        (RFQ, 'RFQ'),
+        (INVOICE, 'Invoice'),
     ]
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
