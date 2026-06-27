@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Vashandi Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'workers/admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="vashandi-admin-brand">
+    <span class="vashandi-admin-mark">V</span>
+    <div>
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">Vashandi Admin</a></h1>
+        <p class="vashandi-admin-tagline">Operations, verification, disputes, and platform oversight</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
