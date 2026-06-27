@@ -12,20 +12,86 @@ class User(AbstractUser):
         ('provider', 'Service Provider'),
         ('both', 'Both'),
     ]
+    ACCOUNT_TYPE_CHOICES = [
+        ('individual', 'Individual'),
+        ('company', 'Company'),
+    ]
+    VERIFICATION_STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
     
     current_role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='client')
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES, default='individual')
     phone = models.CharField(max_length=20, blank=True)
     location = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True)
     avatar_initials = models.CharField(max_length=2, blank=True)
+    company_name = models.CharField(max_length=200, blank=True)
+    company_website = models.URLField(blank=True)
+    vat_number = models.CharField(max_length=80, blank=True)
+    country = models.ForeignKey('Country', null=True, blank=True, on_delete=models.SET_NULL, related_name='users')
+    verification_document = models.FileField(upload_to='verification_documents/', blank=True)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS_CHOICES, default='pending')
+    verification_notes = models.TextField(blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_accounts')
     
     def save(self, *args, **kwargs):
         if not self.avatar_initials and self.first_name and self.last_name:
             self.avatar_initials = f"{self.first_name[0]}{self.last_name[0]}".upper()
+        elif self.account_type == 'company' and self.company_name:
+            words = [word for word in self.company_name.split() if word]
+            if words:
+                self.avatar_initials = ''.join(word[0] for word in words[:2]).upper()
         super().save(*args, **kwargs)
+
+    @property
+    def display_name(self):
+        return self.get_full_name()
+
+    def get_full_name(self):
+        full_name = super().get_full_name().strip()
+        if full_name:
+            return full_name
+        if self.account_type == 'company' and self.company_name:
+            return self.company_name
+        return self.username
+
+    @property
+    def can_access_platform(self):
+        return self.verification_status == 'approved'
+
+    @property
+    def currency_code(self):
+        return self.country.currency_code if self.country else 'USD'
+
+    @property
+    def currency_symbol(self):
+        return self.country.currency_symbol if self.country else '$'
     
     def __str__(self):
-        return f"{self.get_full_name()} ({self.current_role})"
+        return f"{self.display_name} ({self.current_role})"
+
+
+class Country(models.Model):
+    """African country and currency reference data."""
+
+    name = models.CharField(max_length=120)
+    code = models.CharField(max_length=2, unique=True)
+    currency_code = models.CharField(max_length=10)
+    currency_name = models.CharField(max_length=120)
+    currency_symbol = models.CharField(max_length=10, default='$')
+    phone_code = models.CharField(max_length=10, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'Countries'
+
+    def __str__(self):
+        return self.name
 
 
 class TradeCategory(models.Model):
@@ -69,7 +135,7 @@ class Service(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.title} by {self.provider.get_full_name()}"
+        return f"{self.title} by {self.provider.display_name}"
 
     def save(self, *args, **kwargs):
         if self.category_ref:
@@ -123,7 +189,7 @@ class Job(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.title} - {self.client.get_full_name()}"
+        return f"{self.title} - {self.client.display_name}"
 
     def save(self, *args, **kwargs):
         if self.category_ref:
@@ -186,7 +252,7 @@ class Message(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Message from {self.sender.get_full_name()} to {self.recipient.get_full_name()}"
+        return f"Message from {self.sender.display_name} to {self.recipient.display_name}"
 
 
 class Bid(models.Model):
@@ -215,7 +281,7 @@ class Bid(models.Model):
         unique_together = ['provider', 'job']
 
     def __str__(self):
-        return f"Bid by {self.provider.get_full_name()} on {self.job.title}"
+        return f"Bid by {self.provider.display_name} on {self.job.title}"
 
 
 class RFQ(models.Model):
@@ -251,7 +317,7 @@ class RFQ(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"RFQ {self.title} from {self.client.get_full_name()} to {self.provider.get_full_name()}"
+        return f"RFQ {self.title} from {self.client.display_name} to {self.provider.display_name}"
 
 
 class Invoice(models.Model):
@@ -285,11 +351,170 @@ class Invoice(models.Model):
         ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
-        self.total_amount = (self.subtotal or Decimal('0.00')) + (self.tax_amount or Decimal('0.00'))
+        subtotal = self.subtotal if isinstance(self.subtotal, Decimal) else Decimal(str(self.subtotal or '0.00'))
+        tax_amount = self.tax_amount if isinstance(self.tax_amount, Decimal) else Decimal(str(self.tax_amount or '0.00'))
+        self.total_amount = subtotal + tax_amount
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Invoice {self.title} for {self.client.get_full_name()}"
+        return f"Invoice {self.title} for {self.client.display_name}"
+
+
+class ProjectTracker(models.Model):
+    """Project planning and milestone tracking for an awarded job."""
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('pending_client_approval', 'Pending Client Approval'),
+        ('active', 'Active'),
+        ('in_review', 'In Review'),
+        ('disputed', 'Disputed'),
+        ('completed', 'Completed'),
+    ]
+
+    job = models.OneToOneField(Job, on_delete=models.CASCADE, related_name='project_tracker')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project_trackers_owned')
+    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project_trackers_assigned')
+    title = models.CharField(max_length=200)
+    overview = models.TextField(blank=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='draft')
+    client_signature = models.CharField(max_length=200, blank=True)
+    provider_signature = models.CharField(max_length=200, blank=True)
+    client_signed_at = models.DateTimeField(null=True, blank=True)
+    provider_signed_at = models.DateTimeField(null=True, blank=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Project Tracker for {self.job.title}"
+
+    @property
+    def released_total(self):
+        return sum(phase.planned_amount for phase in self.phases.filter(fund_release_status='released'))
+
+
+class ProjectPhase(models.Model):
+    """Client-defined project phase with provider delivery plan and release control."""
+
+    PLAN_STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('pending_client_approval', 'Pending Client Approval'),
+        ('approved', 'Approved'),
+        ('changes_requested', 'Changes Requested'),
+    ]
+    EXECUTION_STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('submitted', 'Submitted For Review'),
+        ('approved', 'Approved'),
+        ('disputed', 'Disputed'),
+    ]
+    FUND_RELEASE_STATUS_CHOICES = [
+        ('locked', 'Locked'),
+        ('pending_release', 'Pending Release'),
+        ('payment_submitted', 'Payment Proof Submitted'),
+        ('released', 'Released'),
+        ('held', 'Held'),
+    ]
+
+    tracker = models.ForeignKey(ProjectTracker, on_delete=models.CASCADE, related_name='phases')
+    sequence = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=200)
+    client_scope = models.TextField(help_text='What the client expects in this phase.')
+    provider_plan = models.TextField(blank=True)
+    provider_notes = models.TextField(blank=True)
+    planned_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    plan_status = models.CharField(max_length=30, choices=PLAN_STATUS_CHOICES, default='draft')
+    execution_status = models.CharField(max_length=30, choices=EXECUTION_STATUS_CHOICES, default='not_started')
+    fund_release_status = models.CharField(max_length=30, choices=FUND_RELEASE_STATUS_CHOICES, default='locked')
+    provider_evidence_image = models.FileField(upload_to='project_phase_evidence/', blank=True)
+    provider_evidence_notes = models.TextField(blank=True)
+    payment_proof_file = models.FileField(upload_to='project_phase_payment_proofs/', blank=True)
+    payment_proof_notes = models.TextField(blank=True)
+    payment_proof_uploaded_at = models.DateTimeField(null=True, blank=True)
+    payment_acknowledgement_signature = models.CharField(max_length=200, blank=True)
+    payment_acknowledgement_notes = models.TextField(blank=True)
+    payment_acknowledged_at = models.DateTimeField(null=True, blank=True)
+    client_approval_signature = models.CharField(max_length=200, blank=True)
+    provider_submission_signature = models.CharField(max_length=200, blank=True)
+    provider_submitted_at = models.DateTimeField(null=True, blank=True)
+    client_approved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sequence', 'id']
+
+    def __str__(self):
+        return f"{self.tracker.title} - Phase {self.sequence}: {self.title}"
+
+
+class ProjectTask(models.Model):
+    """Task builder under each project phase."""
+
+    STATUS_CHOICES = [
+        ('client_defined', 'Client Defined'),
+        ('planned', 'Planned By Provider'),
+        ('approved_to_start', 'Approved To Start'),
+        ('in_progress', 'In Progress'),
+        ('submitted', 'Submitted For Review'),
+        ('completed', 'Completed'),
+        ('disputed', 'Disputed'),
+    ]
+
+    phase = models.ForeignKey(ProjectPhase, on_delete=models.CASCADE, related_name='tasks')
+    sequence = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=200)
+    customer_definition = models.TextField()
+    provider_execution_plan = models.TextField(blank=True)
+    provider_description = models.TextField(blank=True)
+    completion_notes = models.TextField(blank=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='client_defined')
+    client_plan_signature = models.CharField(max_length=200, blank=True)
+    client_completion_signature = models.CharField(max_length=200, blank=True)
+    provider_updated_at = models.DateTimeField(null=True, blank=True)
+    client_approved_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sequence', 'id']
+
+    def __str__(self):
+        return f"{self.phase.title} - {self.title}"
+
+
+class ProjectDispute(models.Model):
+    """Conflict raised by client or provider for admin resolution."""
+
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+
+    tracker = models.ForeignKey(ProjectTracker, on_delete=models.CASCADE, related_name='disputes')
+    phase = models.ForeignKey(ProjectPhase, null=True, blank=True, on_delete=models.SET_NULL, related_name='disputes')
+    task = models.ForeignKey(ProjectTask, null=True, blank=True, on_delete=models.SET_NULL, related_name='disputes')
+    raised_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='project_disputes_raised')
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    admin_resolution = models.TextField(blank=True)
+    resolved_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='project_disputes_resolved')
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Dispute on {self.tracker.title} ({self.status})"
 
 
 class Notification(models.Model):
@@ -301,6 +526,7 @@ class Notification(models.Model):
     REVIEW = 'review'
     RFQ = 'rfq'
     INVOICE = 'invoice'
+    DISPUTE = 'dispute'
     NOTIFICATION_TYPES = [
         (MESSAGE, 'Message'),
         (BID, 'Bid'),
@@ -308,6 +534,7 @@ class Notification(models.Model):
         (REVIEW, 'Review'),
         (RFQ, 'RFQ'),
         (INVOICE, 'Invoice'),
+        (DISPUTE, 'Dispute'),
     ]
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

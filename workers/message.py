@@ -154,9 +154,9 @@ class MessageManager:
         """
         return {
             'id': message.id,
-            'sender_name': message.sender.get_full_name(),
+            'sender_name': message.sender.display_name,
             'sender_id': message.sender.id,
-            'recipient_name': message.recipient.get_full_name(),
+            'recipient_name': message.recipient.display_name,
             'recipient_id': message.recipient.id,
             'service_title': message.service.title if message.service else None,
             'job_title': message.job.title if message.job else None,

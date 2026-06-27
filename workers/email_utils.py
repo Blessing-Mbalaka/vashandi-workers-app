@@ -99,14 +99,15 @@ def send_welcome_email(user):
     return _send_html_email(
         recipient_email=user.email,
         subject='Welcome to Vashandi',
-        preheader='Your account is ready and you can now sign in.',
-        heading=f"Welcome, {user.get_full_name() or user.username}",
-        intro='Your Vashandi account has been created successfully.',
+        preheader='Your account has been created and is waiting for verification approval.',
+        heading=f"Welcome, {user.display_name}",
+        intro='Your Vashandi account has been created successfully and is now pending admin verification.',
         highlights=[
             {'label': 'Role', 'value': user.get_current_role_display()},
             {'label': 'Username', 'value': user.username},
+            {'label': 'Verification', 'value': user.get_verification_status_display()},
         ],
-        footer_note='Sign in to Vashandi to start using your dashboard.'
+        footer_note='You will be able to sign in after your verification documents have been reviewed and approved.'
     )
 
 
@@ -116,10 +117,10 @@ def send_message_email(message_obj):
     subject_context = message_obj.service.title if message_obj.service else (message_obj.job.title if message_obj.job else 'Direct Conversation')
     return _send_html_email(
         recipient_email=message_obj.recipient.email,
-        subject=f'New message from {message_obj.sender.get_full_name() or message_obj.sender.username}',
+        subject=f'New message from {message_obj.sender.display_name}',
         preheader='You have a new platform message waiting for you.',
         heading='New Message Received',
-        intro=f"{message_obj.sender.get_full_name() or message_obj.sender.username} sent you a new message on Vashandi.",
+        intro=f"{message_obj.sender.display_name} sent you a new message on Vashandi.",
         highlights=[
             {'label': 'Context', 'value': subject_context},
             {'label': 'Message Preview', 'value': message_obj.content},
@@ -133,7 +134,7 @@ def send_rfq_email(rfq):
         subject=f'New RFQ for {rfq.service.title}',
         preheader='A client wants a quote from you.',
         heading='New RFQ Submitted',
-        intro=f"{rfq.client.get_full_name() or rfq.client.username} sent you a request for quote.",
+        intro=f"{rfq.client.display_name} sent you a request for quote.",
         highlights=[
             {'label': 'Service', 'value': rfq.service.title},
             {'label': 'RFQ Title', 'value': rfq.title},
@@ -145,13 +146,13 @@ def send_rfq_email(rfq):
 def send_invoice_email(invoice):
     return _send_html_email(
         recipient_email=invoice.client.email,
-        subject=f'New invoice from {invoice.provider.get_full_name() or invoice.provider.username}',
+        subject=f'New invoice from {invoice.provider.display_name}',
         preheader='A provider has sent you an invoice on Vashandi.',
         heading='New Invoice Ready',
-        intro=f"{invoice.provider.get_full_name() or invoice.provider.username} has sent you an invoice.",
+        intro=f"{invoice.provider.display_name} has sent you an invoice.",
         highlights=[
             {'label': 'Invoice', 'value': invoice.title},
-            {'label': 'Total', 'value': f'${invoice.total_amount}'},
+            {'label': 'Total', 'value': f'{invoice.client.currency_symbol}{invoice.total_amount} {invoice.client.currency_code}'},
             {'label': 'Due Date', 'value': invoice.due_date or 'Not specified'},
         ],
     )
@@ -163,7 +164,7 @@ def send_review_email(review):
         subject='New review received',
         preheader='A client left feedback on your service.',
         heading='New Review Received',
-        intro=f"{review.reviewer.get_full_name() or review.reviewer.username} left a new review on your service.",
+        intro=f"{review.reviewer.display_name} left a new review on your service.",
         highlights=[
             {'label': 'Service', 'value': review.service.title},
             {'label': 'Rating', 'value': f'{review.rating} / 5'},
@@ -181,7 +182,7 @@ def send_status_change_email(job, actor, note=''):
         subject=f'Job status updated: {job.title}',
         preheader='A client updated the status of your assigned job.',
         heading='Job Status Updated',
-        intro=f"{actor.get_full_name() or actor.username} updated the status of a job you are assigned to.",
+        intro=f"{actor.display_name} updated the status of a job you are assigned to.",
         highlights=[
             {'label': 'Job', 'value': job.title},
             {'label': 'New Status', 'value': job.get_status_display()},
@@ -193,7 +194,7 @@ def send_status_change_email(job, actor, note=''):
 def send_bid_email(*, recipient, actor, subject, heading, intro, job_title, amount=None, extra_label=None, extra_value=None):
     highlights = [{'label': 'Job', 'value': job_title}]
     if amount is not None:
-        highlights.append({'label': 'Amount', 'value': f'${amount}'})
+        highlights.append({'label': 'Amount', 'value': f'{recipient.currency_symbol}{amount} {recipient.currency_code}'})
     if extra_label and extra_value is not None:
         highlights.append({'label': extra_label, 'value': extra_value})
     return _send_html_email(

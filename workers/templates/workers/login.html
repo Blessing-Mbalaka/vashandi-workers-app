@@ -254,6 +254,22 @@
             transition: background-color 5000s ease-in-out 0s;
         }
 
+        .form-help {
+            margin-top: 8px;
+            color: #8a7961;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .company-fields {
+            display: none;
+        }
+
+        .company-fields.show {
+            display: block;
+        }
+
         .submit-btn {
             width: 100%;
             margin-top: 8px;
@@ -411,12 +427,44 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>Account Type</label>
+                            <select name="account_type" id="accountTypeSelect" required onchange="toggleCompanyFields(this.value)">
+                                <option value="individual">Individual</option>
+                                <option value="company">Company</option>
+                            </select>
+                        </div>
+                        <div class="company-fields" id="companyFields">
+                            <div class="form-group">
+                                <label>Company Name</label>
+                                <input type="text" name="company_name" id="companyNameInput" placeholder="Registered company name">
+                            </div>
+                            <div class="form-group">
+                                <label>Company Website (Optional)</label>
+                                <input type="url" name="company_website" placeholder="https://example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>VAT Number (Optional)</label>
+                                <input type="text" name="vat_number" placeholder="VAT / Tax reference">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <select name="country" id="registerCountrySelect" required>
+                                <option value="">Select your country</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>Location</label>
-                            <input type="text" name="location" placeholder="e.g., Harare, Zimbabwe">
+                            <input type="text" name="location" placeholder="City or town">
                         </div>
                         <div class="form-group">
                             <label>Phone (Optional)</label>
                             <input type="tel" name="phone" placeholder="Your phone number">
+                        </div>
+                        <div class="form-group">
+                            <label id="verificationDocumentLabel">Verification Document</label>
+                            <input type="file" name="verification_document" id="verificationDocumentInput" required accept=".pdf,.jpg,.jpeg,.png,.webp">
+                            <p class="form-help" id="verificationDocumentHelp">Upload the correct verification file for your account type. Your account will stay pending until an admin reviews and approves it.</p>
                         </div>
                         <button type="submit" class="submit-btn">Register</button>
                     </form>
@@ -474,6 +522,37 @@
             document.getElementById('successMessage').classList.remove('show');
         }
 
+        function toggleCompanyFields(value) {
+            const container = document.getElementById('companyFields');
+            const companyNameInput = document.getElementById('companyNameInput');
+            const verificationDocumentLabel = document.getElementById('verificationDocumentLabel');
+            const verificationDocumentHelp = document.getElementById('verificationDocumentHelp');
+            const isCompany = value === 'company';
+            container.classList.toggle('show', isCompany);
+            companyNameInput.required = isCompany;
+            verificationDocumentLabel.textContent = isCompany ? 'Company Verification Documents' : 'Certified ID Document';
+            verificationDocumentHelp.textContent = isCompany
+                ? 'Upload merged company documents as one file, such as registration papers, tax clearance, or other company compliance records. Your account will stay pending until an admin reviews and approves the file.'
+                : 'This upload is required. Your account will stay pending until an admin reviews and approves your certified ID document.';
+            if (!isCompany) {
+                companyNameInput.value = '';
+            }
+        }
+
+        async function loadCountries() {
+            try {
+                const response = await fetch('/api/countries/');
+                const rawData = await response.json();
+                const countries = Array.isArray(rawData) ? rawData : (rawData.results || []);
+                const select = document.getElementById('registerCountrySelect');
+                select.innerHTML = '<option value="">Select your country</option>' + countries.map(country => `
+                    <option value="${country.id}">${country.name} (${country.currency_code})</option>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load countries', error);
+            }
+        }
+
         function populateLoginAfterRegister(username) {
             const loginUsername = document.querySelector('#loginForm input[name="username"]');
             const loginPassword = document.querySelector('#loginForm input[name="password"]');
@@ -527,17 +606,7 @@
             hideMessages();
 
             const formData = new FormData(event.target);
-            const data = {
-                username: formData.get('username'),
-                email: formData.get('email'),
-                password: formData.get('password'),
-                password2: formData.get('password2'),
-                first_name: formData.get('first_name'),
-                last_name: formData.get('last_name'),
-                current_role: formData.get('current_role'),
-                location: formData.get('location'),
-                phone: formData.get('phone')
-            };
+            const data = Object.fromEntries(formData.entries());
 
             if (data.password !== data.password2) {
                 showError('Passwords do not match.');
@@ -548,10 +617,9 @@
                 const response = await fetch('/api/register/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken')
                     },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
                 const result = await response.json();
@@ -569,6 +637,9 @@
                 console.error('Error:', error);
             }
         }
+
+        loadCountries();
+        toggleCompanyFields(document.getElementById('accountTypeSelect').value);
     </script>
 </body>
 </html>

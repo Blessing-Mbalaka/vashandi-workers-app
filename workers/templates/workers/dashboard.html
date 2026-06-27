@@ -1842,6 +1842,230 @@
                 justify-content: center;
             }
         }
+        :root {
+            --shell-bg: #f6f1e8;
+            --surface: #fffdf9;
+            --surface-strong: #ffffff;
+            --surface-muted: #f3ecdf;
+            --ink: #171411;
+            --ink-soft: #4f463c;
+            --line: #dcc9a3;
+            --line-strong: #c7a15a;
+            --accent: #b88621;
+            --accent-dark: #8f6918;
+            --accent-soft: #efe2bf;
+            --shadow-lg: 0 22px 54px rgba(67, 45, 10, 0.12);
+            --shadow-md: 0 14px 28px rgba(67, 45, 10, 0.08);
+        }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            background: radial-gradient(circle at top, #fffaf0 0%, var(--shell-bg) 55%, #efe6d6 100%);
+            color: var(--ink);
+        }
+
+        body::before {
+            background:
+                linear-gradient(180deg, rgba(255, 248, 236, 0.92), rgba(246, 241, 232, 0.98)),
+                linear-gradient(90deg, rgba(199, 161, 90, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(199, 161, 90, 0.05) 1px, transparent 1px);
+            background-size: auto, 48px 48px, 48px 48px;
+        }
+
+        nav,
+        .dashboard-header,
+        .stat-card,
+        .service-card,
+        .filters-panel,
+        .modal-content,
+        .notification-dropdown,
+        .search-bar,
+        .mode-toggle,
+        .sidebar-nav,
+        .workspace-area {
+            background: rgba(255, 253, 249, 0.94) !important;
+            color: var(--ink);
+            border-color: var(--line) !important;
+            box-shadow: var(--shadow-md) !important;
+        }
+
+        nav {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .logo,
+        .stat-card h3,
+        .accent-text {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .user-info h4,
+        .welcome h1,
+        .section-header h2,
+        .service-card h3,
+        .modal-header h2,
+        .provider-details h2,
+        .comment-author {
+            color: var(--ink) !important;
+        }
+
+        .user-info p,
+        .welcome p,
+        .muted-text,
+        .service-description,
+        .meta-label,
+        .notification-item,
+        .provider-stat span,
+        .comment-text,
+        .service-provider div,
+        .service-meta,
+        .modal-body p {
+            color: var(--ink-soft) !important;
+        }
+
+        .search-bar input,
+        .search-bar input::placeholder,
+        .form-group input,
+        .form-group textarea,
+        .form-group select,
+        .filters-panel select,
+        .filters-panel input {
+            color: var(--ink) !important;
+        }
+
+        .search-bar,
+        .form-group input,
+        .form-group textarea,
+        .form-group select,
+        .filters-panel select,
+        .filters-panel input {
+            background: var(--surface-strong) !important;
+            border: 1px solid var(--line) !important;
+            box-shadow: none !important;
+        }
+
+        .dashboard-header,
+        .stat-card,
+        .service-card,
+        .modal-content,
+        .sidebar-nav,
+        .workspace-area {
+            border-radius: 22px !important;
+        }
+
+        .post-job-btn,
+        .btn-submit,
+        .btn-primary {
+            background: linear-gradient(135deg, #171411, #3b2a17) !important;
+            border: 1px solid #3b2a17 !important;
+            color: #fffaf0 !important;
+            box-shadow: 0 14px 30px rgba(23, 20, 17, 0.18) !important;
+        }
+
+        .btn-secondary,
+        .btn-cancel,
+        .icon-button,
+        .logout-btn,
+        .sidebar-link {
+            background: var(--surface-muted) !important;
+            color: var(--ink) !important;
+            border: 1px solid var(--line) !important;
+        }
+
+        .sidebar-link.active,
+        .sidebar-link:hover,
+        .icon-button:hover,
+        .btn-secondary:hover,
+        .btn-cancel:hover {
+            border-color: var(--line-strong) !important;
+            background: #fff7e8 !important;
+            color: var(--ink) !important;
+        }
+
+        .service-category,
+        .status-badge {
+            background: var(--accent-soft) !important;
+            color: var(--accent-dark) !important;
+            border: 1px solid rgba(184, 134, 33, 0.25);
+        }
+
+        .provider-avatar,
+        .avatar,
+        .button-icon {
+            background: linear-gradient(135deg, #1f1a14, #b88621) !important;
+            color: #fffaf0 !important;
+        }
+
+        .app-shell {
+            align-items: start;
+            gap: 1.5rem;
+        }
+
+        .sidebar-nav {
+            position: sticky;
+            top: 96px;
+            padding: 1.25rem;
+        }
+
+        .sidebar-brand {
+            padding: 0.4rem 0 1rem;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-brand h3 {
+            font-size: 1.15rem;
+            color: var(--ink);
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-brand p {
+            font-size: 0.88rem;
+            color: var(--ink-soft);
+        }
+
+        .sidebar-section-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--ink-soft);
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 700;
+        }
+
+        .workspace-footer {
+            margin: 2rem auto 3rem;
+            max-width: 1400px;
+            padding: 1.1rem 2rem 0;
+            color: var(--ink-soft);
+            font-size: 0.9rem;
+        }
+
+        .workspace-footer .footer-card {
+            background: rgba(255, 253, 249, 0.9);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar-nav {
+                position: static;
+            }
+
+            .workspace-footer .footer-card {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1939,10 +2163,21 @@
     <div class="container">
         <div class="app-shell">
             <aside class="sidebar-nav">
+                <div class="sidebar-brand">
+                    <h3>Vashandi Workspace</h3>
+                    <p>Projects, quotes, invoices, approvals, and tracked releases in one place.</p>
+                </div>
+                <div class="sidebar-section-label">Shared</div>
                 <button type="button" class="sidebar-link active" id="sidebarDashboard" onclick="switchWorkspaceTab('dashboard')">Dashboard</button>
                 <button type="button" class="sidebar-link" id="sidebarRfqs" onclick="switchWorkspaceTab('rfqs')">Quotes / RFQs</button>
                 <button type="button" class="sidebar-link" id="sidebarInvoices" onclick="switchWorkspaceTab('invoices')">Invoices</button>
+                <button type="button" class="sidebar-link" id="sidebarProjects" onclick="switchWorkspaceTab('projects')">Project Tracker</button>
                 <button type="button" class="sidebar-link" id="sidebarAnalytics" onclick="switchWorkspaceTab('analytics')">Analytics</button>
+                {% if user.is_superuser %}
+                <div class="sidebar-section-label">Administration</div>
+                <a href="{% url 'admin-portal' %}" class="sidebar-link" id="sidebarAdminPortal">Admin Portal</a>
+                {% endif %}
+                <div class="sidebar-section-label">Account</div>
                 <a href="{% url 'logout' %}" class="sidebar-link sidebar-link-logout">Logout</a>
             </aside>
             <div class="workspace-area">
@@ -2036,6 +2271,17 @@
                     <div id="invoiceContent" class="services-grid"></div>
                 </section>
 
+                <section id="projectTrackerSection" class="workspace-section" style="display: none;">
+                    <div class="section-header">
+                        <div>
+                            <h2>Project Tracker</h2>
+                            <p class="muted-text">Plan, approve, track, dispute, and release work by phase instead of waiting for surprises at the end.</p>
+                        </div>
+                        <button type="button" class="post-job-btn" id="newProjectTrackerBtn" onclick="openProjectTrackerCreateModal()" style="display: none;">New Tracker</button>
+                    </div>
+                    <div id="projectTrackerContent" class="services-grid"></div>
+                </section>
+
                 <section id="analyticsSection" class="workspace-section" style="display: none;">
                     <div class="section-header">
                         <div>
@@ -2050,6 +2296,13 @@
         </div>
     </div>
 
+    <footer class="workspace-footer">
+        <div class="footer-card">
+            <span>Vashandi keeps quotes, approvals, payment proof, and phase releases traceable.</span>
+            <span>Stored records stay available for download and admin review.</span>
+        </div>
+    </footer>
+
     <!-- Service Detail Modal -->
     <div class="modal" id="serviceModal">
         <div class="modal-content">
@@ -2062,6 +2315,7 @@
                     <div>
                         <div id="modalProviderName">Provider Name</div>
                         <div style="font-size: 0.9em; opacity: 0.9;" id="modalProviderLocation">Location</div>
+                        <div style="font-size: 0.82em; opacity: 0.85;" id="modalProviderMeta"></div>
                     </div>
                 </div>
             </div>
@@ -2154,12 +2408,12 @@
                         <textarea name="description" required placeholder="Describe the job in detail..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Budget (USD) *</label>
+                        <label>Budget *</label>
                         <input type="number" name="budget" required placeholder="Enter your budget" step="0.01">
                     </div>
                     <div class="form-group">
                         <label>Location *</label>
-                        <input type="text" name="location" required placeholder="e.g., Harare, Zimbabwe">
+                        <input type="text" name="location" required placeholder="City or town">
                     </div>
                     <div class="form-group">
                         <label>Deadline</label>
@@ -2261,6 +2515,110 @@
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="closeModal('reviewModal')">Cancel</button>
                         <button type="submit" class="btn-submit">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="projectTrackerCreateModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('projectTrackerCreateModal')">&times;</button>
+                <h2>Create Project Tracker</h2>
+                <p class="muted-text">Create a phased plan for an already-awarded job.</p>
+            </div>
+            <div class="modal-body">
+                <form id="projectTrackerCreateForm" onsubmit="submitProjectTracker(event)">
+                    <div class="form-group">
+                        <label>Assigned Job *</label>
+                        <select id="projectTrackerJobId" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tracker Title *</label>
+                        <input type="text" id="projectTrackerTitle" required placeholder="e.g., Kitchen renovation project tracker">
+                    </div>
+                    <div class="form-group">
+                        <label>Client Overview</label>
+                        <textarea id="projectTrackerOverview" placeholder="Summarize the project expectations, release logic, and approval goals."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Client Signature *</label>
+                        <input type="text" id="projectTrackerClientSignature" required placeholder="Type full name as sign-off">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('projectTrackerCreateModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Create Tracker</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="projectTrackerDetailModal">
+        <div class="modal-content" style="max-width: 1100px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('projectTrackerDetailModal')">&times;</button>
+                <div class="service-category" id="projectTrackerDetailStatus">DRAFT</div>
+                <h2 id="projectTrackerDetailTitle">Project Tracker</h2>
+                <p id="projectTrackerDetailMeta" class="muted-text" style="margin-top: 0.5rem;"></p>
+            </div>
+            <div class="modal-body" id="projectTrackerDetailBody"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="projectPhaseCompletionModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('projectPhaseCompletionModal')">&times;</button>
+                <h2>Submit Phase Completion</h2>
+                <p id="projectPhaseCompletionTitle" class="muted-text"></p>
+            </div>
+            <div class="modal-body">
+                <form id="projectPhaseCompletionForm" onsubmit="submitPhaseCompletion(event)">
+                    <input type="hidden" id="projectPhaseCompletionId">
+                    <div class="form-group">
+                        <label>Provider Completion Notes</label>
+                        <textarea id="projectPhaseCompletionNotes" placeholder="Summarize what was delivered in this phase."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Project Picture / Evidence</label>
+                        <input type="file" id="projectPhaseCompletionImage" accept=".jpg,.jpeg,.png,.webp,.pdf">
+                    </div>
+                    <div class="form-group">
+                        <label>Provider Signature *</label>
+                        <input type="text" id="projectPhaseCompletionSignature" required placeholder="Type full name as sign-off">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('projectPhaseCompletionModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Submit Phase</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="projectPhasePaymentModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeModal('projectPhasePaymentModal')">&times;</button>
+                <h2>Upload Payment Proof</h2>
+                <p id="projectPhasePaymentTitle" class="muted-text"></p>
+            </div>
+            <div class="modal-body">
+                <form id="projectPhasePaymentForm" onsubmit="submitPhasePaymentProof(event)">
+                    <input type="hidden" id="projectPhasePaymentId">
+                    <div class="form-group">
+                        <label>Proof of Payment File *</label>
+                        <input type="file" id="projectPhasePaymentFile" accept=".pdf,.jpg,.jpeg,.png,.webp" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Notes</label>
+                        <textarea id="projectPhasePaymentNotes" placeholder="Reference number, transfer date, bank, or payer details."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeModal('projectPhasePaymentModal')">Cancel</button>
+                        <button type="submit" class="btn-submit">Upload Proof</button>
                     </div>
                 </form>
             </div>
@@ -2380,8 +2738,11 @@
             id: {{ user.id }},
             role: '{{ user.current_role }}',
             initials: '{{ user.avatar_initials }}',
-            name: '{{ user.get_full_name }}',
-            firstName: '{{ user.first_name }}'
+            name: '{{ user.display_name }}',
+            firstName: '{{ user.first_name|default:user.display_name }}',
+            countryName: '{{ user.country.name|default_if_none:"" }}',
+            currencySymbol: '{{ user.currency_symbol }}',
+            currencyCode: '{{ user.currency_code }}'
         };
 
         let currentFilter = 'all';
@@ -2391,6 +2752,7 @@
         let servicesData = [];
         let rfqData = [];
         let invoiceData = [];
+        let projectTrackerData = [];
         let categoryTree = [];
         let categoryBySlug = {};
         let categoryById = {};
@@ -2409,6 +2771,18 @@
             return (value || '')
                 .replace(/_/g, ' ')
                 .replace(/\b\w/g, char => char.toUpperCase());
+        }
+
+        function formatMoney(amount, currencySymbol = currentUser.currencySymbol || '$', currencyCode = currentUser.currencyCode || 'USD') {
+            const numericAmount = Number(amount || 0);
+            return `${currencySymbol}${numericAmount.toFixed(2)} ${currencyCode}`;
+        }
+
+        function formatLocation(city, countryName = '') {
+            if (city && countryName) {
+                return `${city}, ${countryName}`;
+            }
+            return city || countryName || 'Location not set';
         }
 
         function indexCategories(categories) {
@@ -2592,6 +2966,7 @@
             document.getElementById('dashboardSection').style.display = tab === 'dashboard' ? 'block' : 'none';
             document.getElementById('rfqSection').style.display = tab === 'rfqs' ? 'block' : 'none';
             document.getElementById('invoiceSection').style.display = tab === 'invoices' ? 'block' : 'none';
+            document.getElementById('projectTrackerSection').style.display = tab === 'projects' ? 'block' : 'none';
             document.getElementById('analyticsSection').style.display = tab === 'analytics' ? 'block' : 'none';
 
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
@@ -2599,6 +2974,7 @@
                 dashboard: 'sidebarDashboard',
                 rfqs: 'sidebarRfqs',
                 invoices: 'sidebarInvoices',
+                projects: 'sidebarProjects',
                 analytics: 'sidebarAnalytics',
             };
             const activeLink = document.getElementById(activeMap[tab]);
@@ -2610,11 +2986,17 @@
             if (newRfqBtn) {
                 newRfqBtn.style.display = tab === 'rfqs' && currentUser.role === 'client' ? 'inline-flex' : 'none';
             }
+            const newProjectTrackerBtn = document.getElementById('newProjectTrackerBtn');
+            if (newProjectTrackerBtn) {
+                newProjectTrackerBtn.style.display = tab === 'projects' && currentUser.role === 'client' ? 'inline-flex' : 'none';
+            }
 
             if (tab === 'rfqs') {
                 await loadRfqs();
             } else if (tab === 'invoices') {
                 await loadInvoices();
+            } else if (tab === 'projects') {
+                await loadProjectTrackers();
             } else if (tab === 'analytics') {
                 await loadAnalytics();
             }
@@ -2666,7 +3048,7 @@
                             <div class="provider-avatar">${service.provider_initials}</div>
                             <div>
                                 <div>${service.provider_name}</div>
-                                <div style="font-size: 0.85em; opacity: 0.9;">Location: ${service.provider_location || 'Zimbabwe'}</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">${formatLocation(service.provider_location, service.provider_country_name)}</div>
                             </div>
                         </div>
                     </div>
@@ -2677,7 +3059,7 @@
                                 ${Array.from({ length: Math.floor(service.average_rating || 0) }, () => '&#9733;').join('')}
                                 <span class="muted-text" style="margin-left: 5px;">${service.average_rating || 0} (${service.review_count || 0})</span>
                             </div>
-                            <div class="price">$${service.price_per_hour}/hr</div>
+                            <div class="price">${formatMoney(service.price_per_hour, service.currency_symbol, service.currency_code)}/hr</div>
                         </div>
                     </div>
                     <div class="service-footer">
@@ -2849,7 +3231,7 @@
 
                                     <div>${job.client_name}</div>
 
-                                    <div style="font-size: 0.85em; opacity: 0.9;">Location: ${job.location || 'Zimbabwe'}</div>
+                                    <div style="font-size: 0.85em; opacity: 0.9;">${formatLocation(job.location, job.client_country_name)}</div>
 
                                 </div>
 
@@ -2873,7 +3255,7 @@
 
                                 </div>
 
-                                <div class="price">$${job.budget}</div>
+                                <div class="price">${formatMoney(job.budget, job.currency_symbol, job.currency_code)}</div>
 
                             </div>
 
@@ -3016,17 +3398,22 @@
                 document.getElementById('modalCategory').textContent = getDisplayCategory(service).toUpperCase();
                 document.getElementById('modalTitle').textContent = service.title;
                 document.getElementById('modalProviderAvatar').textContent = service.provider_initials;
-                document.getElementById('modalProviderName').textContent = service.provider_name;
-                document.getElementById('modalProviderLocation').textContent = 'Location: ' + (service.provider_location || 'Zimbabwe');
+                document.getElementById('modalProviderName').textContent = service.provider_company_name || service.provider_name;
+                document.getElementById('modalProviderLocation').textContent = formatLocation(service.provider_location, service.provider_country_name);
+                const companyWebsite = service.provider_company_website
+                    ? `<a href="${service.provider_company_website}" target="_blank" rel="noopener" style="color: inherit;">Website</a>`
+                    : '';
+                const publicProfile = `<a href="/profiles/${service.provider}/" style="color: inherit;">View Profile</a>`;
+                document.getElementById('modalProviderMeta').innerHTML = [companyWebsite, publicProfile].filter(Boolean).join(' • ');
                 document.getElementById('modalProfileAvatar').textContent = service.provider_initials;
-                document.getElementById('modalProfileName').textContent = service.provider_name;
+                document.getElementById('modalProfileName').textContent = service.provider_company_name || service.provider_name;
                 document.getElementById('modalRatingStars').innerHTML = Array.from({ length: Math.floor(service.average_rating || 0) }, () => '&#9733;').join('');
                 document.getElementById('modalRatingText').textContent = `${service.average_rating || 0} (${service.review_count || 0} reviews)`;
                 document.getElementById('modalJobsCompleted').textContent = service.jobs_completed || 0;
                 document.getElementById('modalResponseTime').textContent = service.response_time || '24h';
                 document.getElementById('modalExperience').textContent = `${service.experience_years || 0}yrs`;
                 document.getElementById('modalDescription').textContent = service.description;
-                document.getElementById('modalPrice').textContent = `$${service.price_per_hour}/hour`;
+                document.getElementById('modalPrice').textContent = `${formatMoney(service.price_per_hour, service.currency_symbol, service.currency_code)}/hour`;
 
                 const leaveReviewBtn = document.getElementById('leaveReviewBtn');
                 if (leaveReviewBtn) {
@@ -3124,7 +3511,7 @@
                         <div class="service-meta">
                             <div class="muted-text">
                                 <div><div class="meta-label">Quantity</div>${rfq.quantity}</div>
-                                <div style="margin-top: 0.75rem;"><div class="meta-label">Target Budget</div>${rfq.target_budget ? `$${rfq.target_budget}` : 'Not set'}</div>
+                                <div style="margin-top: 0.75rem;"><div class="meta-label">Target Budget</div>${rfq.target_budget ? formatMoney(rfq.target_budget, rfq.currency_symbol, rfq.currency_code) : 'Not set'}</div>
                             </div>
                             <div class="price">${rfq.invoice_count || 0} invoices</div>
                         </div>
@@ -3259,16 +3646,17 @@
                         <p class="service-description">${invoice.scope_of_work}</p>
                         <div class="service-meta">
                             <div class="muted-text">
-                                <div><div class="meta-label">Subtotal</div>$${invoice.subtotal}</div>
-                                <div style="margin-top: 0.75rem;"><div class="meta-label">Tax</div>$${invoice.tax_amount}</div>
+                                <div><div class="meta-label">Subtotal</div>${formatMoney(invoice.subtotal, invoice.currency_symbol, invoice.currency_code)}</div>
+                                <div style="margin-top: 0.75rem;"><div class="meta-label">Tax</div>${formatMoney(invoice.tax_amount, invoice.currency_symbol, invoice.currency_code)}</div>
                             </div>
-                            <div class="price">$${invoice.total_amount}</div>
+                            <div class="price">${formatMoney(invoice.total_amount, invoice.currency_symbol, invoice.currency_code)}</div>
                         </div>
                     </div>
                     <div class="service-footer">
                         ${currentUser.role === 'client' && invoice.status === 'sent' ? `<button class="btn-primary" onclick="acceptInvoice(${invoice.id})">Accept</button>` : ''}
                         ${currentUser.role === 'client' && invoice.status === 'accepted' ? `<button class="btn-primary" onclick="markInvoicePaid(${invoice.id})">Mark Paid</button>` : ''}
                         <button class="btn-secondary" onclick="viewInvoice(${invoice.id})">View Invoice</button>
+                        <button class="btn-secondary" onclick="downloadInvoice(${invoice.id})">Download</button>
                     </div>
                 </div>
             `).join('');
@@ -3363,7 +3751,92 @@
             if (!invoice) {
                 return;
             }
-            alert(`Invoice: ${invoice.title}\n\nScope:\n${invoice.scope_of_work}\n\nLine Items:\n${invoice.line_items || 'No breakdown added'}\n\nTotal: $${invoice.total_amount}`);
+            const invoiceWindow = window.open('', '_blank', 'width=980,height=760');
+            if (!invoiceWindow) {
+                alert('Allow pop-ups to preview the invoice.');
+                return;
+            }
+            invoiceWindow.document.write(buildInvoiceHtml(invoice));
+            invoiceWindow.document.close();
+        }
+
+        function downloadInvoice(invoiceId) {
+            window.open(`/api/invoices/${invoiceId}/download/`, '_blank');
+        }
+
+        function buildInvoiceHtml(invoice) {
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${invoice.title}</title>
+    <style>
+        body { font-family: Georgia, "Times New Roman", serif; margin: 0; background: #f6f1e8; color: #171411; }
+        .page { max-width: 960px; margin: 32px auto; background: #fffdf9; padding: 42px; border: 1px solid #dcc9a3; }
+        .hero { display: flex; justify-content: space-between; gap: 18px; border-bottom: 2px solid #b88621; padding-bottom: 20px; margin-bottom: 24px; }
+        .brand { font-size: 34px; font-weight: 700; color: #8f6918; }
+        .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #8f6918; margin-bottom: 6px; }
+        .panel { background: #fff8ed; border: 1px solid #e4d1a7; padding: 18px; margin-top: 18px; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #8f6918; margin-bottom: 6px; }
+        .value { white-space: pre-wrap; line-height: 1.7; }
+        .total { font-size: 30px; font-weight: 700; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="hero">
+            <div>
+                <div class="brand">Vashandi</div>
+                <div class="eyebrow">Invoice Preview</div>
+            </div>
+            <div>
+                <div class="label">Invoice</div>
+                <div class="value">${invoice.title}</div>
+                <div class="label" style="margin-top: 10px;">Status</div>
+                <div class="value">${invoice.status.replace(/_/g, ' ')}</div>
+            </div>
+        </div>
+        <div class="grid">
+            <div class="panel">
+                <div class="label">Provider</div>
+                <div class="value">${invoice.provider_name}</div>
+                <div class="label" style="margin-top: 10px;">Client</div>
+                <div class="value">${invoice.client_name}</div>
+            </div>
+            <div class="panel">
+                <div class="label">RFQ / Service</div>
+                <div class="value">${invoice.rfq_title || invoice.service_title || 'Invoice'}</div>
+                <div class="label" style="margin-top: 10px;">Due Date</div>
+                <div class="value">${invoice.due_date || 'Not specified'}</div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="label">Scope of Work</div>
+            <div class="value">${invoice.scope_of_work}</div>
+        </div>
+        <div class="panel">
+            <div class="label">Line Items</div>
+            <div class="value">${invoice.line_items || 'No line items added.'}</div>
+        </div>
+        <div class="grid">
+            <div class="panel">
+                <div class="label">Notes</div>
+                <div class="value">${invoice.notes || 'No notes added.'}</div>
+            </div>
+            <div class="panel">
+                <div class="label">Subtotal</div>
+                <div class="value">${formatMoney(invoice.subtotal, invoice.currency_symbol, invoice.currency_code)}</div>
+                <div class="label" style="margin-top: 10px;">Tax</div>
+                <div class="value">${formatMoney(invoice.tax_amount, invoice.currency_symbol, invoice.currency_code)}</div>
+                <div class="label" style="margin-top: 10px;">Total</div>
+                <div class="total">${formatMoney(invoice.total_amount, invoice.currency_symbol, invoice.currency_code)}</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
         }
 
         async function loadAnalytics() {
@@ -3393,7 +3866,7 @@
                     <p>Customers Sending RFQs</p>
                 </div>
                 <div class="stat-card">
-                    <h3>$${Number(analytics.pricing?.average || 0).toFixed(2)}</h3>
+                    <h3>${formatMoney(analytics.pricing?.average || 0)}</h3>
                     <p>Average Invoice Total</p>
                 </div>
             `;
@@ -3414,12 +3887,479 @@
                         <h3>Shared Pricing & Demand</h3>
                     </div>
                     <div class="service-body">
-                        <p class="service-description"><strong>Lowest invoice:</strong> $${Number(analytics.shared_pricing?.minimum || 0).toFixed(2)}</p>
-                        <p class="service-description"><strong>Highest invoice:</strong> $${Number(analytics.shared_pricing?.maximum || 0).toFixed(2)}</p>
+                        <p class="service-description"><strong>Lowest invoice:</strong> ${formatMoney(analytics.shared_pricing?.minimum || 0)}</p>
+                        <p class="service-description"><strong>Highest invoice:</strong> ${formatMoney(analytics.shared_pricing?.maximum || 0)}</p>
                         ${sharedServices.slice(0, 3).map(item => `<p class="service-description"><strong>${item.service__title || 'Unknown Service'}</strong>: ${item.rfq_count} RFQs</p>`).join('')}
                     </div>
                 </div>
             `;
+        }
+
+        async function loadProjectTrackers() {
+            try {
+                const response = await fetch('/api/project-trackers/');
+                const data = await response.json();
+                projectTrackerData = Array.isArray(data) ? data : (data.results || []);
+                renderProjectTrackers();
+            } catch (error) {
+                console.error('Error loading project trackers:', error);
+                document.getElementById('projectTrackerContent').innerHTML = '<p class="empty-state">Unable to load project trackers right now.</p>';
+            }
+        }
+
+        function renderProjectTrackers() {
+            const container = document.getElementById('projectTrackerContent');
+            if (!projectTrackerData.length) {
+                container.innerHTML = `<p class="empty-state">${currentUser.role === 'client' ? 'No project trackers yet. Create one for an awarded job.' : 'No project trackers assigned to you yet.'}</p>`;
+                return;
+            }
+
+            container.innerHTML = projectTrackerData.map(tracker => `
+                <article class="service-card" onclick="openProjectTrackerDetail(${tracker.id})">
+                    <div class="service-header">
+                        <div class="service-category">${tracker.status.replace(/_/g, ' ').toUpperCase()}</div>
+                        <h3>${tracker.title}</h3>
+                        <div class="service-provider">
+                            <div class="provider-avatar">${(currentUser.role === 'client' ? tracker.provider_name : tracker.client_name).split(' ').map(name => name[0]).join('').slice(0, 2)}</div>
+                            <div>
+                                <div>${currentUser.role === 'client' ? tracker.provider_name : tracker.client_name}</div>
+                                <div style="font-size: 0.85em; opacity: 0.9;">${tracker.job_title}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="service-body">
+                        <p class="service-description">${tracker.overview || 'No overview added yet.'}</p>
+                        <div class="service-meta">
+                            <div class="muted-text" style="font-size: 0.9em;">
+                                <div><div class="meta-label">Phases</div>${tracker.phases.length}</div>
+                                <div style="margin-top: 0.75rem;"><div class="meta-label">Disputes</div>${tracker.disputes.length}</div>
+                            </div>
+                            <div class="price">${formatMoney(tracker.released_total || 0, tracker.currency_symbol, tracker.currency_code)} released</div>
+                        </div>
+                    </div>
+                    <div class="service-footer">
+                        <button class="btn-primary" onclick="event.stopPropagation(); openProjectTrackerDetail(${tracker.id})">Open Tracker</button>
+                        <button class="btn-secondary" onclick="event.stopPropagation(); openProjectTrackerDetail(${tracker.id})">View Phases</button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        async function openProjectTrackerCreateModal() {
+            try {
+                const response = await fetch('/api/jobs/my_jobs/');
+                const data = await response.json();
+                const jobs = (Array.isArray(data) ? data : (data.results || [])).filter(job => job.provider_name);
+                const select = document.getElementById('projectTrackerJobId');
+                select.innerHTML = jobs.length
+                    ? jobs.map(job => `<option value="${job.id}">${job.title} - ${job.provider_name}</option>`).join('')
+                    : '<option value="">No assigned jobs available</option>';
+                document.getElementById('projectTrackerCreateForm').reset();
+                document.getElementById('projectTrackerCreateModal').classList.add('show');
+            } catch (error) {
+                console.error('Error loading jobs for tracker creation:', error);
+                alert('Unable to load assigned jobs right now.');
+            }
+        }
+
+        async function submitProjectTracker(event) {
+            event.preventDefault();
+            const payload = {
+                job: Number(document.getElementById('projectTrackerJobId').value),
+                title: document.getElementById('projectTrackerTitle').value.trim(),
+                overview: document.getElementById('projectTrackerOverview').value.trim(),
+                client_signature: document.getElementById('projectTrackerClientSignature').value.trim(),
+            };
+
+            try {
+                const response = await fetch('/api/project-trackers/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Unable to create tracker.');
+                    return;
+                }
+                closeModal('projectTrackerCreateModal');
+                await loadProjectTrackers();
+            } catch (error) {
+                console.error('Error creating project tracker:', error);
+                alert('Unable to create tracker right now.');
+            }
+        }
+
+        async function openProjectTrackerDetail(trackerId) {
+            try {
+                const response = await fetch(`/api/project-trackers/${trackerId}/`);
+                const tracker = await response.json();
+                document.getElementById('projectTrackerDetailStatus').textContent = tracker.status.replace(/_/g, ' ').toUpperCase();
+                document.getElementById('projectTrackerDetailTitle').textContent = tracker.title;
+                document.getElementById('projectTrackerDetailMeta').textContent = `${tracker.job_title} • Client: ${tracker.client_name} • Provider: ${tracker.provider_name}`;
+
+                const canClientManage = currentUser.role === 'client' && currentUser.id === tracker.client;
+                const canProviderManage = currentUser.role === 'provider' && currentUser.id === tracker.provider;
+
+                const phasesMarkup = tracker.phases.length ? tracker.phases.map(phase => `
+                    <div class="service-card" style="cursor: default;">
+                        <div class="service-header">
+                            <div class="service-category">${phase.plan_status.replace(/_/g, ' ')}</div>
+                            <h3>Phase ${phase.sequence}: ${phase.title}</h3>
+                            <div class="service-provider">
+                                <div class="provider-avatar">${phase.sequence}</div>
+                                <div>
+                                    <div>${formatMoney(phase.planned_amount, tracker.currency_symbol, tracker.currency_code)}</div>
+                                    <div style="font-size: 0.85em; opacity: 0.9;">Release: ${phase.fund_release_status.replace(/_/g, ' ')}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="service-body">
+                            <p class="service-description"><strong>Client scope:</strong> ${phase.client_scope}</p>
+                            <p class="service-description"><strong>Provider plan:</strong> ${phase.provider_plan || 'Pending provider plan.'}</p>
+                            <p class="service-description"><strong>Execution:</strong> ${phase.execution_status.replace(/_/g, ' ')}</p>
+                            <p class="service-description"><strong>Release status:</strong> ${phase.fund_release_status.replace(/_/g, ' ')}</p>
+                            ${phase.provider_evidence_url ? `<p class="service-description"><a href="${phase.provider_evidence_url}" target="_blank" rel="noopener">Open project evidence</a></p>` : ''}
+                            ${phase.payment_proof_url ? `<p class="service-description"><a href="${phase.payment_proof_url}" target="_blank" rel="noopener">Open payment proof</a></p>` : ''}
+                            ${phase.payment_proof_notes ? `<p class="service-description"><strong>Payment notes:</strong> ${phase.payment_proof_notes}</p>` : ''}
+                            ${phase.payment_acknowledgement_signature ? `<p class="service-description"><strong>Payment acknowledged by:</strong> ${phase.payment_acknowledgement_signature}</p>` : ''}
+                            <div class="form-actions" style="justify-content: flex-start; margin-bottom: 1rem;">
+                                ${canClientManage ? `<button type="button" class="btn-secondary" onclick="addProjectPhaseTask(${tracker.id}, ${phase.id})">Add Task</button>` : ''}
+                                ${canProviderManage ? `<button type="button" class="btn-secondary" onclick="submitPhasePlanPrompt(${phase.id})">Draft Plan</button>` : ''}
+                                ${canClientManage && phase.plan_status === 'pending_client_approval' ? `<button type="button" class="btn-secondary" onclick="approvePhasePlanPrompt(${phase.id})">Approve Phase Plan</button>` : ''}
+                                ${canProviderManage && phase.plan_status === 'approved' && phase.execution_status === 'not_started' ? `<button type="button" class="btn-secondary" onclick="startPhase(${phase.id})">Start Phase</button>` : ''}
+                                ${canProviderManage && phase.execution_status === 'in_progress' ? `<button type="button" class="btn-secondary" onclick="openPhaseCompletionModal(${phase.id}, '${phase.title.replace(/'/g, "\\'")}')">Submit Phase</button>` : ''}
+                                ${canClientManage && phase.execution_status === 'submitted' ? `<button type="button" class="btn-secondary" onclick="approvePhaseCompletionPrompt(${phase.id})">Approve Work</button>` : ''}
+                                ${canClientManage && phase.execution_status === 'approved' && phase.fund_release_status === 'pending_release' ? `<button type="button" class="btn-secondary" onclick="openPhasePaymentModal(${phase.id}, '${phase.title.replace(/'/g, "\\'")}')">Upload Payment Proof</button>` : ''}
+                                ${canProviderManage && phase.fund_release_status === 'payment_submitted' ? `<button type="button" class="btn-secondary" onclick="acknowledgePhasePaymentPrompt(${phase.id})">Acknowledge Payment</button>` : ''}
+                                <button type="button" class="btn-secondary" onclick="raiseProjectDisputePrompt(${tracker.id}, ${phase.id}, null)">Raise Dispute</button>
+                            </div>
+                            <div style="display: grid; gap: 0.75rem;">
+                                ${(phase.tasks || []).map(task => `
+                                    <div style="border: 1px solid rgba(51, 65, 85, 0.6); padding: 1rem; border-radius: 10px;">
+                                        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center;">
+                                            <strong>${task.sequence}. ${task.title}</strong>
+                                            <span class="status-badge" style="background: rgba(59,130,246,0.12); color:#93c5fd;">${task.status.replace(/_/g, ' ')}</span>
+                                        </div>
+                                        <p class="service-description"><strong>Client task:</strong> ${task.customer_definition}</p>
+                                        <p class="service-description"><strong>Provider plan:</strong> ${task.provider_execution_plan || 'Pending provider plan.'}</p>
+                                        <p class="service-description"><strong>Task notes:</strong> ${task.completion_notes || task.provider_description || 'No task notes yet.'}</p>
+                                        <div class="form-actions" style="justify-content:flex-start;">
+                                            ${canProviderManage ? `<button type="button" class="btn-secondary" onclick="planProjectTaskPrompt(${task.id})">Plan Task</button>` : ''}
+                                            ${canClientManage && task.status === 'planned' ? `<button type="button" class="btn-secondary" onclick="approveProjectTaskPlanPrompt(${task.id})">Approve Task Plan</button>` : ''}
+                                            ${canProviderManage && task.status === 'approved_to_start' ? `<button type="button" class="btn-secondary" onclick="startProjectTask(${task.id})">Start Task</button>` : ''}
+                                            ${canProviderManage && task.status === 'in_progress' ? `<button type="button" class="btn-secondary" onclick="submitProjectTaskCompletionPrompt(${task.id})">Submit Task</button>` : ''}
+                                            ${canClientManage && task.status === 'submitted' ? `<button type="button" class="btn-secondary" onclick="approveProjectTaskCompletionPrompt(${task.id})">Approve Task</button>` : ''}
+                                            <button type="button" class="btn-secondary" onclick="raiseProjectDisputePrompt(${tracker.id}, ${phase.id}, ${task.id})">Dispute</button>
+                                        </div>
+                                    </div>
+                                `).join('') || '<p class="empty-state">No tasks added for this phase yet.</p>'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('') : '<p class="empty-state">No phases added yet.</p>';
+
+                document.getElementById('projectTrackerDetailBody').innerHTML = `
+                    <div class="form-actions" style="justify-content: flex-start; margin-bottom: 1rem;">
+                        ${canClientManage ? `<button type="button" class="btn-submit" onclick="addProjectPhase(${tracker.id})">Add Phase</button>` : ''}
+                        ${canProviderManage && !tracker.provider_signature ? `<button type="button" class="btn-submit" onclick="providerSignTracker(${tracker.id})">Provider Sign</button>` : ''}
+                        ${canClientManage && !tracker.client_signature ? `<button type="button" class="btn-submit" onclick="clientApproveTracker(${tracker.id})">Client Approve</button>` : ''}
+                    </div>
+                    <div style="display:grid; gap:1rem; margin-bottom: 1.5rem;">
+                        <div><div class="meta-label">Overview</div><p class="muted-text">${tracker.overview || 'No overview added yet.'}</p></div>
+                        <div><div class="meta-label">Released So Far</div><p class="accent-text">${formatMoney(tracker.released_total || 0, tracker.currency_symbol, tracker.currency_code)}</p></div>
+                        <div><div class="meta-label">Client Signature</div><p class="muted-text">${tracker.client_signature || 'Pending'}</p></div>
+                        <div><div class="meta-label">Provider Signature</div><p class="muted-text">${tracker.provider_signature || 'Pending'}</p></div>
+                    </div>
+                    <div class="services-grid">${phasesMarkup}</div>
+                    <div style="margin-top: 1.5rem;">
+                        <h3>Disputes</h3>
+                        ${tracker.disputes.length ? tracker.disputes.map(dispute => `
+                            <div class="comment" style="margin-top: 0.75rem;">
+                                <div class="comment-header">
+                                    <span class="comment-author">${dispute.raised_by_name}</span>
+                                    <span class="service-category">${dispute.status.toUpperCase()}</span>
+                                </div>
+                                <p class="comment-text">${dispute.reason}</p>
+                                ${dispute.admin_resolution ? `<p class="comment-text"><strong>Admin resolution:</strong> ${dispute.admin_resolution}</p>` : ''}
+                            </div>
+                        `).join('') : '<p class="empty-state">No disputes raised on this tracker.</p>'}
+                    </div>
+                `;
+                document.getElementById('projectTrackerDetailModal').classList.add('show');
+            } catch (error) {
+                console.error('Error loading project tracker details:', error);
+                alert('Unable to load project tracker details right now.');
+            }
+        }
+
+        async function providerSignTracker(trackerId) {
+            const signature = prompt('Type provider signature for this tracker:');
+            if (!signature) return;
+            const result = await postProjectAction(`/api/project-trackers/${trackerId}/provider_sign/`, { signature });
+            if (!result) return;
+            await openProjectTrackerDetail(trackerId);
+            await loadProjectTrackers();
+        }
+
+        async function clientApproveTracker(trackerId) {
+            const signature = prompt('Type client signature to approve this tracker:');
+            if (!signature) return;
+            const result = await postProjectAction(`/api/project-trackers/${trackerId}/client_approve/`, { signature });
+            if (!result) return;
+            await openProjectTrackerDetail(trackerId);
+            await loadProjectTrackers();
+        }
+
+        async function addProjectPhase(trackerId) {
+            const title = prompt('Phase title:');
+            if (!title) return;
+            const clientScope = prompt('Describe what the client expects in this phase:');
+            if (!clientScope) return;
+            const amount = prompt('Planned release amount for this phase:', '0.00');
+            const tracker = projectTrackerData.find(item => item.id === trackerId);
+            const sequence = (tracker?.phases?.length || 0) + 1;
+            const result = await postProjectAction('/api/project-phases/', {
+                tracker: trackerId,
+                title,
+                client_scope: clientScope,
+                planned_amount: amount || '0.00',
+                sequence
+            });
+            if (!result) return;
+            await loadProjectTrackers();
+            await openProjectTrackerDetail(trackerId);
+        }
+
+        async function addProjectPhaseTask(trackerId, phaseId) {
+            const title = prompt('Task title:');
+            if (!title) return;
+            const customerDefinition = prompt('What exactly does the client expect for this task?');
+            if (!customerDefinition) return;
+            const response = await fetch(`/api/project-tasks/?phase=${phaseId}`);
+            const data = await response.json();
+            const tasks = Array.isArray(data) ? data : (data.results || []);
+            const result = await postProjectAction('/api/project-tasks/', {
+                phase: phaseId,
+                title,
+                customer_definition: customerDefinition,
+                sequence: tasks.length + 1
+            });
+            if (!result) return;
+            await openProjectTrackerDetail(trackerId);
+            await loadProjectTrackers();
+        }
+
+        async function submitPhasePlanPrompt(phaseId) {
+            const providerPlan = prompt('Describe the provider plan for this phase:');
+            if (!providerPlan) return;
+            const providerNotes = prompt('Optional provider notes for the client:', '') || '';
+            const result = await postProjectAction(`/api/project-phases/${phaseId}/submit_plan/`, { provider_plan: providerPlan, provider_notes: providerNotes });
+            if (!result) return;
+            await openProjectTrackerDetail(result.tracker);
+            await loadProjectTrackers();
+        }
+
+        async function approvePhasePlanPrompt(phaseId) {
+            const signature = prompt('Type client signature to approve this phase plan:');
+            if (!signature) return;
+            const result = await postProjectAction(`/api/project-phases/${phaseId}/approve_plan/`, { signature });
+            if (!result) return;
+            await openProjectTrackerDetail(result.tracker);
+            await loadProjectTrackers();
+        }
+
+        async function startPhase(phaseId) {
+            const result = await postProjectAction(`/api/project-phases/${phaseId}/start_phase/`, {});
+            if (!result) return;
+            await openProjectTrackerDetail(result.tracker);
+            await loadProjectTrackers();
+        }
+
+        function openPhaseCompletionModal(phaseId, title) {
+            document.getElementById('projectPhaseCompletionForm').reset();
+            document.getElementById('projectPhaseCompletionId').value = phaseId;
+            document.getElementById('projectPhaseCompletionTitle').textContent = title;
+            document.getElementById('projectPhaseCompletionModal').classList.add('show');
+        }
+
+        function openPhasePaymentModal(phaseId, title) {
+            document.getElementById('projectPhasePaymentForm').reset();
+            document.getElementById('projectPhasePaymentId').value = phaseId;
+            document.getElementById('projectPhasePaymentTitle').textContent = title;
+            document.getElementById('projectPhasePaymentModal').classList.add('show');
+        }
+
+        async function submitPhaseCompletion(event) {
+            event.preventDefault();
+            const phaseId = document.getElementById('projectPhaseCompletionId').value;
+            const formData = new FormData();
+            formData.append('provider_evidence_notes', document.getElementById('projectPhaseCompletionNotes').value.trim());
+            formData.append('signature', document.getElementById('projectPhaseCompletionSignature').value.trim());
+            const file = document.getElementById('projectPhaseCompletionImage').files[0];
+            if (file) {
+                formData.append('provider_evidence_image', file);
+            }
+
+            try {
+                const response = await fetch(`/api/project-phases/${phaseId}/submit_completion/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    body: formData
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Unable to submit phase completion.');
+                    return;
+                }
+                closeModal('projectPhaseCompletionModal');
+                await openProjectTrackerDetail(data.tracker);
+                await loadProjectTrackers();
+            } catch (error) {
+                console.error('Error submitting phase completion:', error);
+                alert('Unable to submit phase completion right now.');
+            }
+        }
+
+        async function submitPhasePaymentProof(event) {
+            event.preventDefault();
+            const phaseId = document.getElementById('projectPhasePaymentId').value;
+            const formData = new FormData();
+            formData.append('payment_proof_notes', document.getElementById('projectPhasePaymentNotes').value.trim());
+            const file = document.getElementById('projectPhasePaymentFile').files[0];
+            if (file) {
+                formData.append('payment_proof_file', file);
+            }
+
+            try {
+                const response = await fetch(`/api/project-phases/${phaseId}/submit_payment_proof/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    body: formData
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Unable to upload payment proof.');
+                    return;
+                }
+                closeModal('projectPhasePaymentModal');
+                await openProjectTrackerDetail(data.tracker);
+                await loadProjectTrackers();
+            } catch (error) {
+                console.error('Error uploading payment proof:', error);
+                alert('Unable to upload payment proof right now.');
+            }
+        }
+
+        async function approvePhaseCompletionPrompt(phaseId) {
+            const signature = prompt('Type client signature to approve this phase work:');
+            if (!signature) return;
+            const result = await postProjectAction(`/api/project-phases/${phaseId}/approve_completion/`, { signature });
+            if (!result) return;
+            await openProjectTrackerDetail(result.tracker);
+            await loadProjectTrackers();
+        }
+
+        async function acknowledgePhasePaymentPrompt(phaseId) {
+            const signature = prompt('Type provider signature to acknowledge receipt of this payment:');
+            if (!signature) return;
+            const notes = prompt('Optional acknowledgement notes:', '') || '';
+            const result = await postProjectAction(`/api/project-phases/${phaseId}/acknowledge_payment/`, {
+                signature,
+                payment_acknowledgement_notes: notes
+            });
+            if (!result) return;
+            await openProjectTrackerDetail(result.tracker);
+            await loadProjectTrackers();
+        }
+
+        async function planProjectTaskPrompt(taskId) {
+            const providerExecutionPlan = prompt('Describe how this task will be handled:');
+            if (!providerExecutionPlan) return;
+            const providerDescription = prompt('Optional task description for the client:', '') || '';
+            const result = await postProjectAction(`/api/project-tasks/${taskId}/provider_plan/`, {
+                provider_execution_plan: providerExecutionPlan,
+                provider_description: providerDescription
+            });
+            if (!result) return;
+            await refreshTrackerFromTask(taskId);
+        }
+
+        async function approveProjectTaskPlanPrompt(taskId) {
+            const signature = prompt('Type client signature to approve this task plan:');
+            if (!signature) return;
+            const result = await postProjectAction(`/api/project-tasks/${taskId}/approve_plan/`, { signature });
+            if (!result) return;
+            await refreshTrackerFromTask(taskId);
+        }
+
+        async function startProjectTask(taskId) {
+            const result = await postProjectAction(`/api/project-tasks/${taskId}/start/`, {});
+            if (!result) return;
+            await refreshTrackerFromTask(taskId);
+        }
+
+        async function submitProjectTaskCompletionPrompt(taskId) {
+            const completionNotes = prompt('Completion notes for this task:');
+            if (completionNotes === null) return;
+            const result = await postProjectAction(`/api/project-tasks/${taskId}/submit_completion/`, { completion_notes: completionNotes });
+            if (!result) return;
+            await refreshTrackerFromTask(taskId);
+        }
+
+        async function approveProjectTaskCompletionPrompt(taskId) {
+            const signature = prompt('Type client signature to approve task completion:');
+            if (!signature) return;
+            const result = await postProjectAction(`/api/project-tasks/${taskId}/approve_completion/`, { signature });
+            if (!result) return;
+            await refreshTrackerFromTask(taskId);
+        }
+
+        async function raiseProjectDisputePrompt(trackerId, phaseId = null, taskId = null) {
+            const reason = prompt('Describe the dispute or concern for admin review:');
+            if (!reason) return;
+            const result = await postProjectAction('/api/project-disputes/', {
+                tracker: trackerId,
+                phase: phaseId,
+                task: taskId,
+                reason
+            });
+            if (!result) return;
+            await openProjectTrackerDetail(trackerId);
+            await loadProjectTrackers();
+        }
+
+        async function refreshTrackerFromTask(taskId) {
+            const task = await (await fetch(`/api/project-tasks/${taskId}/`)).json();
+            const phase = await (await fetch(`/api/project-phases/${task.phase}/`)).json();
+            await openProjectTrackerDetail(phase.tracker);
+            await loadProjectTrackers();
+        }
+
+        async function postProjectAction(url, payload) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(typeof data === 'object' ? Object.values(data).flat().join(' ') : 'Project action failed.');
+                    return null;
+                }
+                return data;
+            } catch (error) {
+                console.error('Project action error:', error);
+                alert('Unable to process this project action right now.');
+                return null;
+            }
         }
 
         async function refreshDashboardAlerts() {
@@ -3658,7 +4598,7 @@
                     <div style="display: grid; gap: 1rem;">
                         <div><div class="meta-label">Category</div><p class="muted-text">${getDisplayCategory(job)}</p></div>
                         <div><div class="meta-label">Description</div><p class="muted-text">${job.description}</p></div>
-                        <div><div class="meta-label">Budget</div><p class="accent-text">$${job.budget}</p></div>
+                        <div><div class="meta-label">Budget</div><p class="accent-text">${formatMoney(job.budget, job.currency_symbol, job.currency_code)}</p></div>
                         <div><div class="meta-label">Deadline</div><p class="muted-text">${job.deadline || 'No deadline'}</p></div>
                         <div><div class="meta-label">Assigned Provider</div><p class="muted-text">${job.provider_name || 'Not assigned yet'}</p></div>
                         ${reviewAction ? `<div class="form-actions" style="justify-content: flex-start;">${reviewAction}</div>` : ''}

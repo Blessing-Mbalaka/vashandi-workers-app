@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'workers.middleware.FrontendSafeExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'vashandi_project.urls'
@@ -120,6 +121,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -162,3 +165,4 @@ DEFAULT_FROM_EMAIL = 'STEM LMS <stemappza@gmail.com>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 SEND_WELCOME_EMAILS = True
 SEND_MESSAGE_EMAILS = True
+ERROR_ALERT_RECIPIENTS = ['bjmbalaka@gmail.com']

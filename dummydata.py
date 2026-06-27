@@ -1,19 +1,23 @@
 """
 Dummy data generator for Vashandi Workers App.
 
-Run this script using:
-    python manage.py shell < dummydata.py
+Preferred command:
+    python manage.py seed_demo_data
 
-Or in the shell:
-    exec(open('dummydata.py').read())
+Fallback shell method:
+    python manage.py shell -c "exec(open('dummydata.py').read())"
 """
 
 from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
-from workers.models import Job, Review, Service
+from workers.models import (
+    Country, Job, ProjectDispute, ProjectPhase, ProjectTask, ProjectTracker,
+    Review, Service, TradeCategory,
+)
 
 User = get_user_model()
 
@@ -21,6 +25,7 @@ DEFAULT_PASSWORD = "password123"
 
 
 def upsert_user(user_data):
+    country = Country.objects.filter(code=user_data.get("country_code", "ZW")).first()
     user, _ = User.objects.update_or_create(
         username=user_data["username"],
         defaults={
@@ -31,11 +36,37 @@ def upsert_user(user_data):
             "location": user_data["location"],
             "phone": user_data["phone"],
             "bio": user_data.get("bio", ""),
+            "country": country,
+            "verification_status": "approved",
         },
     )
     user.set_password(DEFAULT_PASSWORD)
     user.save()
     return user
+
+
+def upsert_admin_user():
+    admin_country = Country.objects.filter(code="ZW").first()
+    admin_user, _ = User.objects.update_or_create(
+        username="platform_admin",
+        defaults={
+            "email": "admin@vashandi.local",
+            "first_name": "Platform",
+            "last_name": "Admin",
+            "current_role": "both",
+            "account_type": "individual",
+            "location": "Harare, Zimbabwe",
+            "phone": "+263770000001",
+            "country": admin_country,
+            "verification_status": "approved",
+            "is_staff": True,
+            "is_superuser": True,
+            "is_active": True,
+        },
+    )
+    admin_user.set_password("AdminPass123!")
+    admin_user.save()
+    return admin_user
 
 
 def upsert_service(service_data):
@@ -49,6 +80,7 @@ def upsert_service(service_data):
             "experience_years": service_data["experience_years"],
             "response_time": service_data["response_time"],
             "is_active": True,
+            "category_ref": TradeCategory.objects.filter(slug=service_data["category"]).first(),
         },
     )
     return service
@@ -65,6 +97,7 @@ def upsert_job(job_data):
             "location": job_data["location"],
             "status": job_data["status"],
             "deadline": job_data["deadline"],
+            "category_ref": TradeCategory.objects.filter(slug=job_data["category"]).first(),
             "assigned_provider": job_data.get("assigned_provider"),
             "service": job_data.get("service"),
         },
@@ -86,9 +119,94 @@ def upsert_review(review_data):
     return review
 
 
+def upsert_project_tracker(tracker_data):
+    tracker, _ = ProjectTracker.objects.update_or_create(
+        job=tracker_data["job"],
+        defaults={
+            "client": tracker_data["client"],
+            "provider": tracker_data["provider"],
+            "title": tracker_data["title"],
+            "overview": tracker_data["overview"],
+            "status": tracker_data["status"],
+            "client_signature": tracker_data.get("client_signature", ""),
+            "provider_signature": tracker_data.get("provider_signature", ""),
+            "client_signed_at": tracker_data.get("client_signed_at"),
+            "provider_signed_at": tracker_data.get("provider_signed_at"),
+            "approved_at": tracker_data.get("approved_at"),
+        },
+    )
+    return tracker
+
+
+def upsert_project_phase(phase_data):
+    phase, _ = ProjectPhase.objects.update_or_create(
+        tracker=phase_data["tracker"],
+        sequence=phase_data["sequence"],
+        defaults={
+            "title": phase_data["title"],
+            "client_scope": phase_data["client_scope"],
+            "provider_plan": phase_data.get("provider_plan", ""),
+            "provider_notes": phase_data.get("provider_notes", ""),
+            "planned_amount": phase_data.get("planned_amount", Decimal("0.00")),
+            "plan_status": phase_data.get("plan_status", "draft"),
+            "execution_status": phase_data.get("execution_status", "not_started"),
+            "fund_release_status": phase_data.get("fund_release_status", "locked"),
+            "provider_evidence_notes": phase_data.get("provider_evidence_notes", ""),
+            "payment_proof_notes": phase_data.get("payment_proof_notes", ""),
+            "payment_proof_uploaded_at": phase_data.get("payment_proof_uploaded_at"),
+            "payment_acknowledgement_signature": phase_data.get("payment_acknowledgement_signature", ""),
+            "payment_acknowledgement_notes": phase_data.get("payment_acknowledgement_notes", ""),
+            "payment_acknowledged_at": phase_data.get("payment_acknowledged_at"),
+            "client_approval_signature": phase_data.get("client_approval_signature", ""),
+            "provider_submission_signature": phase_data.get("provider_submission_signature", ""),
+            "provider_submitted_at": phase_data.get("provider_submitted_at"),
+            "client_approved_at": phase_data.get("client_approved_at"),
+        },
+    )
+    return phase
+
+
+def upsert_project_task(task_data):
+    task, _ = ProjectTask.objects.update_or_create(
+        phase=task_data["phase"],
+        sequence=task_data["sequence"],
+        defaults={
+            "title": task_data["title"],
+            "customer_definition": task_data["customer_definition"],
+            "provider_execution_plan": task_data.get("provider_execution_plan", ""),
+            "provider_description": task_data.get("provider_description", ""),
+            "completion_notes": task_data.get("completion_notes", ""),
+            "status": task_data.get("status", "client_defined"),
+            "client_plan_signature": task_data.get("client_plan_signature", ""),
+            "client_completion_signature": task_data.get("client_completion_signature", ""),
+            "provider_updated_at": task_data.get("provider_updated_at"),
+            "client_approved_at": task_data.get("client_approved_at"),
+            "completed_at": task_data.get("completed_at"),
+        },
+    )
+    return task
+
+
+def upsert_project_dispute(dispute_data):
+    dispute, _ = ProjectDispute.objects.update_or_create(
+        tracker=dispute_data["tracker"],
+        phase=dispute_data.get("phase"),
+        task=dispute_data.get("task"),
+        reason=dispute_data["reason"],
+        defaults={
+            "raised_by": dispute_data["raised_by"],
+            "status": dispute_data.get("status", "open"),
+            "admin_resolution": dispute_data.get("admin_resolution", ""),
+            "resolved_by": dispute_data.get("resolved_by"),
+            "resolved_at": dispute_data.get("resolved_at"),
+        },
+    )
+    return dispute
+
+
 def create_dummy_data():
     print("Creating dummy data for Vashandi Workers App...")
-    print("Seeding users, services, jobs, and reviews...")
+    print("Seeding users, services, jobs, reviews, and project tracker data...")
 
     clients = [
         {
@@ -99,6 +217,7 @@ def create_dummy_data():
             "current_role": "client",
             "location": "Harare, Zimbabwe",
             "phone": "+263771234567",
+            "country_code": "ZW",
         },
         {
             "username": "sarah_ncube",
@@ -108,6 +227,7 @@ def create_dummy_data():
             "current_role": "client",
             "location": "Bulawayo, Zimbabwe",
             "phone": "+263772345678",
+            "country_code": "ZW",
         },
         {
             "username": "michael_banda",
@@ -117,6 +237,7 @@ def create_dummy_data():
             "current_role": "client",
             "location": "Harare, Zimbabwe",
             "phone": "+263773456789",
+            "country_code": "ZW",
         },
     ]
 
@@ -130,6 +251,7 @@ def create_dummy_data():
             "location": "Harare, Zimbabwe",
             "phone": "+263774567890",
             "bio": "Expert plumber with 8 years of experience",
+            "country_code": "ZW",
         },
         {
             "username": "david_moyo",
@@ -140,6 +262,7 @@ def create_dummy_data():
             "location": "Bulawayo, Zimbabwe",
             "phone": "+263775678901",
             "bio": "Certified electrician with 6 years of experience",
+            "country_code": "ZW",
         },
         {
             "username": "james_ndlovu",
@@ -150,6 +273,7 @@ def create_dummy_data():
             "location": "Harare, Zimbabwe",
             "phone": "+263776789012",
             "bio": "Skilled carpenter specializing in custom furniture",
+            "country_code": "ZW",
         },
         {
             "username": "thomas_sibanda",
@@ -160,6 +284,7 @@ def create_dummy_data():
             "location": "Mutare, Zimbabwe",
             "phone": "+263777890123",
             "bio": "Professional painter with 5 years of experience",
+            "country_code": "ZW",
         },
         {
             "username": "patrick_mlambo",
@@ -170,6 +295,7 @@ def create_dummy_data():
             "location": "Gweru, Zimbabwe",
             "phone": "+263778901234",
             "bio": "24/7 emergency plumbing services",
+            "country_code": "ZW",
         },
         {
             "username": "emmanuel_chiweshe",
@@ -180,6 +306,7 @@ def create_dummy_data():
             "location": "Harare, Zimbabwe",
             "phone": "+263779012345",
             "bio": "Solar panel installation specialist",
+            "country_code": "ZW",
         },
         {
             "username": "gibson_nyathi",
@@ -190,6 +317,7 @@ def create_dummy_data():
             "location": "Kwekwe, Zimbabwe",
             "phone": "+263770123456",
             "bio": "Door and window installation expert",
+            "country_code": "ZW",
         },
         {
             "username": "admire_chigwedere",
@@ -200,10 +328,13 @@ def create_dummy_data():
             "location": "Harare, Zimbabwe",
             "phone": "+263771234560",
             "bio": "Commercial painting services specialist",
+            "country_code": "ZW",
         },
     ]
 
     print("\nCreating users...")
+    admin_user = upsert_admin_user()
+    print(f"   Created admin: {admin_user.get_full_name()} ({admin_user.username})")
     created_clients = []
     for client_data in clients:
         user = upsert_user(client_data)
@@ -454,18 +585,121 @@ def create_dummy_data():
         review = upsert_review(review_data)
         print(f"   Created review: {review.rating}/5 for {review.service.title}")
 
+    print("\nCreating project tracker data...")
+    active_job = created_jobs[2]
+    tracker = upsert_project_tracker({
+        "job": active_job,
+        "client": active_job.client,
+        "provider": active_job.assigned_provider,
+        "title": "Home Office Bookshelf Project Tracker",
+        "overview": "Track planning, fabrication, installation, and sign-off phase by phase so funds are only released after client approval.",
+        "status": "active",
+        "client_signature": "Tendai Moyo",
+        "provider_signature": "James Ndlovu",
+        "client_signed_at": timezone.now(),
+        "provider_signed_at": timezone.now(),
+        "approved_at": timezone.now(),
+    })
+    phase_one = upsert_project_phase({
+        "tracker": tracker,
+        "sequence": 1,
+        "title": "Design Approval",
+        "client_scope": "Agree on final bookshelf dimensions, shelf spacing, stain color, and fixing points.",
+        "provider_plan": "Prepare a measured sketch, timber cut-list, finish samples, and installation method for approval.",
+        "provider_notes": "Need wall measurements confirmed before cutting timber.",
+        "planned_amount": Decimal("250.00"),
+        "plan_status": "approved",
+        "execution_status": "approved",
+        "fund_release_status": "released",
+        "payment_proof_notes": "Bank transfer proof uploaded for the design approval deposit.",
+        "payment_proof_uploaded_at": timezone.now() - timedelta(days=4),
+        "payment_acknowledgement_signature": "James Ndlovu",
+        "payment_acknowledgement_notes": "Deposit received and cleared.",
+        "payment_acknowledged_at": timezone.now() - timedelta(days=4),
+        "client_approval_signature": "Michael Banda",
+        "provider_submission_signature": "James Ndlovu",
+        "provider_submitted_at": timezone.now() - timedelta(days=5),
+        "client_approved_at": timezone.now() - timedelta(days=4),
+    })
+    phase_two = upsert_project_phase({
+        "tracker": tracker,
+        "sequence": 2,
+        "title": "Fabrication and Installation",
+        "client_scope": "Build, sand, stain, transport, install, and leave the unit ready for use.",
+        "provider_plan": "Fabricate off-site, do a dry fit, then final install and touch-ups at client premises.",
+        "provider_notes": "Installation to happen once Phase 1 sign-off is locked.",
+        "planned_amount": Decimal("550.00"),
+        "plan_status": "approved",
+        "execution_status": "in_progress",
+        "fund_release_status": "locked",
+        "client_approval_signature": "Michael Banda",
+        "client_approved_at": timezone.now() - timedelta(days=2),
+    })
+    task_one = upsert_project_task({
+        "phase": phase_one,
+        "sequence": 1,
+        "title": "Confirm wall measurements",
+        "customer_definition": "Client confirms the final install wall and preferred bookshelf width/height.",
+        "provider_execution_plan": "Visit site, measure twice, and prepare scaled notes.",
+        "provider_description": "Measurements and fixing points captured.",
+        "completion_notes": "Client agreed final measurements on site.",
+        "status": "completed",
+        "client_plan_signature": "Michael Banda",
+        "client_completion_signature": "Michael Banda",
+        "provider_updated_at": timezone.now() - timedelta(days=6),
+        "client_approved_at": timezone.now() - timedelta(days=4),
+        "completed_at": timezone.now() - timedelta(days=4),
+    })
+    task_two = upsert_project_task({
+        "phase": phase_two,
+        "sequence": 1,
+        "title": "Cut and assemble bookshelf frame",
+        "customer_definition": "Frame must match the approved design and support book weight safely.",
+        "provider_execution_plan": "Cut all timber, assemble the frame, and pre-test load bearing in workshop.",
+        "provider_description": "Frame assembly is underway in workshop.",
+        "status": "in_progress",
+        "client_plan_signature": "Michael Banda",
+        "provider_updated_at": timezone.now() - timedelta(days=1),
+    })
+    upsert_project_task({
+        "phase": phase_two,
+        "sequence": 2,
+        "title": "Install and final finishing",
+        "customer_definition": "Install cleanly, align shelves, and leave no visible damage on walls or floor.",
+        "provider_execution_plan": "Transport, mount securely, stain match, and finish on site.",
+        "status": "approved_to_start",
+        "client_plan_signature": "Michael Banda",
+        "provider_updated_at": timezone.now() - timedelta(days=1),
+        "client_approved_at": timezone.now() - timedelta(days=1),
+    })
+    upsert_project_dispute({
+        "tracker": tracker,
+        "phase": phase_two,
+        "task": task_two,
+        "raised_by": active_job.client,
+        "reason": "Client wants admin review if stain finish does not match the approved sample before final release.",
+        "status": "open",
+    })
+    print(f"   Created project tracker: {tracker.title}")
+
     print("\nDummy data creation complete.")
     print("\nSummary:")
     print(f"   - Users seeded: {len(created_clients) + len(created_providers)}")
+    print("   - Admin users: 1")
     print(f"   - Clients: {len(created_clients)}")
     print(f"   - Providers: {len(created_providers)}")
     print(f"   - Services: {len(created_services)}")
     print(f"   - Jobs: {len(created_jobs)}")
     print(f"   - Reviews: {len(reviews_data)}")
+    print("   - Project trackers: 1")
+    print("   - Project phases: 2")
+    print("   - Project disputes: 1")
     print(f"\nAll seeded users have password: {DEFAULT_PASSWORD}")
     print("\nYou can now log in with:")
     print(f"   Client: tendai_moyo / {DEFAULT_PASSWORD}")
     print(f"   Provider: john_phiri / {DEFAULT_PASSWORD}")
+    print("   Admin: platform_admin / AdminPass123!")
 
 
-create_dummy_data()
+if __name__ == "__main__":
+    create_dummy_data()

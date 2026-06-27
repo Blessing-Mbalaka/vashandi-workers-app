@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile_user.display_name }} | Vashandi</title>
+    <style>
+        :root {
+            --bg: #fcfaf4;
+            --panel: rgba(255, 255, 255, 0.92);
+            --surface: #f7f1e4;
+            --line: rgba(199, 150, 26, 0.18);
+            --text: #17130d;
+            --muted: #746754;
+            --gold: #c7961a;
+            --gold-deep: #9c7310;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, rgba(199, 150, 26, 0.12), transparent 30%),
+                linear-gradient(180deg, #fffef9 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px 40px;
+        }
+
+        .hero,
+        .services {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 28px;
+            box-shadow: 0 24px 60px rgba(72, 52, 22, 0.1);
+            padding: 32px;
+        }
+
+        .services {
+            margin-top: 24px;
+        }
+
+        .hero-header {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, var(--gold), var(--gold-deep));
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        h1, h2 {
+            margin: 0 0 8px;
+        }
+
+        .muted {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .meta-card,
+        .service-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 18px;
+        }
+
+        .meta-label {
+            color: var(--muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        a { color: var(--gold-deep); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <div class="hero-header">
+                <div class="avatar">{{ profile_user.avatar_initials|default:"VA" }}</div>
+                <div>
+                    <h1>{{ profile_user.display_name }}</h1>
+                    <p class="muted">{{ profile_user.get_account_type_display }} • {{ profile_user.get_current_role_display }}</p>
+                </div>
+            </div>
+
+            {% if profile_user.bio %}
+                <p class="muted">{{ profile_user.bio }}</p>
+            {% endif %}
+
+            <div class="meta-grid">
+                <div class="meta-card">
+                    <div class="meta-label">Country</div>
+                    <div>{{ profile_user.country.name|default:"Not set" }}</div>
+                </div>
+                <div class="meta-card">
+                    <div class="meta-label">Location</div>
+                    <div>{{ profile_user.location|default:"Not set" }}</div>
+                </div>
+                <div class="meta-card">
+                    <div class="meta-label">Currency</div>
+                    <div>{{ profile_user.currency_code }}</div>
+                </div>
+                {% if profile_user.company_website %}
+                <div class="meta-card">
+                    <div class="meta-label">Website</div>
+                    <div><a href="{{ profile_user.company_website }}" target="_blank" rel="noopener">{{ profile_user.company_website }}</a></div>
+                </div>
+                {% endif %}
+                {% if profile_user.vat_number %}
+                <div class="meta-card">
+                    <div class="meta-label">VAT Number</div>
+                    <div>{{ profile_user.vat_number }}</div>
+                </div>
+                {% endif %}
+                <div class="meta-card">
+                    <div class="meta-label">Verification</div>
+                    <div>{{ profile_user.get_verification_status_display }}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="services">
+            <h2>Services</h2>
+            {% if services %}
+                <div class="services-grid">
+                    {% for service in services %}
+                        <article class="service-card">
+                            <div class="meta-label">
+                                {% if service.category_ref %}{{ service.category_ref.name }}{% else %}{{ service.category|title }}{% endif %}
+                            </div>
+                            <h3>{{ service.title }}</h3>
+                            <p class="muted">{{ service.description }}</p>
+                            <p><strong>{{ profile_user.currency_symbol }}{{ service.price_per_hour }}</strong> / hour</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted">No public services listed yet.</p>
+            {% endif %}
+        </section>
+    </div>
+</body>
+</html>

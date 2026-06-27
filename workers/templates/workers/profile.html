@@ -99,7 +99,8 @@
         }
 
         input,
-        textarea {
+        textarea,
+        select {
             width: 100%;
             padding: 15px 16px;
             border-radius: 16px;
@@ -111,18 +112,41 @@
         }
 
         input:hover,
-        textarea:hover {
+        textarea:hover,
+        select:hover {
             background: #ffffff;
             border-color: rgba(199, 150, 26, 0.28);
         }
 
         input:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
             outline: none;
             border-color: var(--gold);
             box-shadow: 0 0 0 4px rgba(199, 150, 26, 0.14);
             background: #ffffff;
             transform: translateY(-1px);
+        }
+
+        .verification-panel {
+            margin: 0 0 24px;
+            padding: 18px 20px;
+            border-radius: 18px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+        }
+
+        .verification-panel strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .company-fields {
+            display: none;
+        }
+
+        .company-fields.show {
+            display: contents;
         }
 
         textarea {
@@ -208,8 +232,12 @@
             </svg>
             Back to Dashboard
         </a>
-        <h1>{{ user.get_full_name }}</h1>
+        <h1 id="profileHeading">{{ user.get_full_name }}</h1>
         <p class="intro">Refine your public profile so clients can quickly understand your skills, contact details, and working style.</p>
+        <div class="verification-panel" id="verificationPanel">
+            <strong>Verification status</strong>
+            <span id="verificationStatusText">Loading verification details...</span>
+        </div>
         <form id="profileForm">
             <div class="form-grid">
                 <div>
@@ -221,6 +249,13 @@
                     <input type="text" id="lastName" name="last_name" value="{{ user.last_name }}">
                 </div>
                 <div>
+                    <label for="accountType">Account Type</label>
+                    <select id="accountType" name="account_type" onchange="toggleCompanyFields(this.value)">
+                        <option value="individual">Individual</option>
+                        <option value="company">Company</option>
+                    </select>
+                </div>
+                <div>
                     <label for="phone">Phone</label>
                     <input type="text" id="phone" name="phone" value="{{ user.phone }}">
                 </div>
@@ -228,10 +263,34 @@
                     <label for="location">Location</label>
                     <input type="text" id="location" name="location" value="{{ user.location }}">
                 </div>
+                <div>
+                    <label for="country">Country</label>
+                    <select id="country" name="country">
+                        <option value="">Select country</option>
+                    </select>
+                </div>
+                <div class="company-fields" id="companyFields">
+                    <div>
+                        <label for="companyName">Company Name</label>
+                        <input type="text" id="companyName" name="company_name">
+                    </div>
+                    <div>
+                        <label for="companyWebsite">Company Website</label>
+                        <input type="url" id="companyWebsite" name="company_website" placeholder="https://example.com">
+                    </div>
+                    <div>
+                        <label for="vatNumber">VAT Number</label>
+                        <input type="text" id="vatNumber" name="vat_number">
+                    </div>
+                </div>
             </div>
             <div style="margin-top: 18px;">
                 <label for="bio">Bio</label>
                 <textarea id="bio" name="bio">{{ user.bio }}</textarea>
+            </div>
+            <div style="margin-top: 18px;">
+                <label for="verificationDocument" id="verificationDocumentLabel">Verification Document</label>
+                <input type="file" id="verificationDocument" name="verification_document" accept=".pdf,.jpg,.jpeg,.png,.webp">
             </div>
             <div class="actions">
                 <button type="button" class="btn btn-secondary" onclick="window.location='{% url 'dashboard' %}'">Cancel</button>
@@ -247,19 +306,72 @@
             return null;
         }
 
+        function toggleCompanyFields(value) {
+            const isCompany = value === 'company';
+            document.getElementById('companyFields').classList.toggle('show', isCompany);
+            document.getElementById('companyName').required = isCompany;
+            document.getElementById('verificationDocumentLabel').textContent = isCompany
+                ? 'Company Verification Documents'
+                : 'Certified ID Document';
+        }
+
+        async function loadCountries(selectedCountryId = '') {
+            const response = await fetch('/api/countries/');
+            const rawData = await response.json();
+            const countries = Array.isArray(rawData) ? rawData : (rawData.results || []);
+            const select = document.getElementById('country');
+            select.innerHTML = '<option value="">Select country</option>' + countries.map(country => `
+                <option value="${country.id}" ${String(selectedCountryId) === String(country.id) ? 'selected' : ''}>
+                    ${country.name} (${country.currency_code})
+                </option>
+            `).join('');
+        }
+
+        function renderVerificationStatus(user) {
+            const statusText = {
+                approved: 'Approved',
+                pending: 'Pending Review',
+                rejected: 'Rejected'
+            }[user.verification_status] || user.verification_status;
+            const note = user.verification_notes ? ` Admin note: ${user.verification_notes}` : '';
+            const documentLink = user.verification_document_url
+                ? ` <a href="${user.verification_document_url}" target="_blank" rel="noopener">View uploaded document</a>.`
+                : '';
+            document.getElementById('verificationStatusText').innerHTML = `${statusText}.${note}${documentLink}`;
+        }
+
+        async function hydrateProfile() {
+            try {
+                const response = await fetch('/api/user/');
+                const user = await response.json();
+                document.getElementById('firstName').value = user.first_name || '';
+                document.getElementById('lastName').value = user.last_name || '';
+                document.getElementById('phone').value = user.phone || '';
+                document.getElementById('location').value = user.location || '';
+                document.getElementById('bio').value = user.bio || '';
+                document.getElementById('profileHeading').textContent = user.display_name || user.full_name || user.username;
+                document.getElementById('accountType').value = user.account_type || 'individual';
+                document.getElementById('companyName').value = user.company_name || '';
+                document.getElementById('companyWebsite').value = user.company_website || '';
+                document.getElementById('vatNumber').value = user.vat_number || '';
+                await loadCountries(user.country || '');
+                toggleCompanyFields(user.account_type || 'individual');
+                renderVerificationStatus(user);
+            } catch (error) {
+                console.error('Unable to load profile', error);
+            }
+        }
+
         document.getElementById('profileForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
-            const payload = {};
-            formData.forEach((value, key) => payload[key] = value);
             try {
                 const response = await fetch('/api/user/', {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
                         'X-CSRFToken': getCookie('csrftoken')
                     },
-                    body: JSON.stringify(payload)
+                    body: formData
                 });
                 const data = await response.json();
                 const status = document.getElementById('statusMessage');
@@ -268,17 +380,22 @@
                     status.style.color = 'var(--success)';
                     status.style.background = 'rgba(47, 138, 94, 0.08)';
                     status.style.border = '1px solid rgba(47, 138, 94, 0.18)';
-                    status.textContent = 'Profile updated successfully.';
+                    status.textContent = data.verification_status === 'pending'
+                        ? 'Profile updated. Your verification is pending admin review.'
+                        : 'Profile updated successfully.';
+                    renderVerificationStatus(data);
                 } else {
                     status.style.color = 'var(--danger)';
                     status.style.background = 'rgba(197, 72, 72, 0.08)';
                     status.style.border = '1px solid rgba(197, 72, 72, 0.18)';
-                    status.textContent = data.error || 'Failed to update profile.';
+                    status.textContent = data.error || Object.values(data).flat().join(' ') || 'Failed to update profile.';
                 }
             } catch (error) {
                 alert('Unable to update profile. Please try again.');
             }
         });
+
+        hydrateProfile();
     </script>
 </body>
 </html>

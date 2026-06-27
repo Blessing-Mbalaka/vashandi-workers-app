@@ -3,10 +3,11 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.db import transaction
 from django.db.models import Avg, Count, Max, Min, Q
-from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from rest_framework import permissions, status, viewsets
@@ -25,12 +26,17 @@ from .email_utils import (
     send_welcome_email as send_welcome_email_notification,
 )
 from .message import MessageManager
-from .models import Bid, Invoice, Job, Message, Notification, RFQ, Review, Service, TradeCategory
+from .models import (
+    Bid, Country, Invoice, Job, Message, Notification, RFQ, Review, Service,
+    TradeCategory, ProjectTracker, ProjectPhase, ProjectTask, ProjectDispute,
+)
 from .serializers import (
     UserSerializer, UserRegistrationSerializer, ServiceSerializer,
     ServiceListSerializer, JobSerializer, ReviewSerializer, MessageSerializer,
     BidSerializer, InvoiceSerializer, NotificationSerializer, RFQSerializer,
-    TradeCategorySerializer,
+    TradeCategorySerializer, CountrySerializer, ProjectTrackerSerializer,
+    ProjectPhaseSerializer, ProjectTaskSerializer, ProjectDisputeSerializer,
+    AdminUserSerializer,
 )
 
 User = get_user_model()
@@ -91,6 +97,59 @@ def send_invoice_email(invoice):
     return send_invoice_email_notification(invoice)
 
 
+def notify_admins(*, actor, title, description, related_object=None):
+    for admin_user in User.objects.filter(is_superuser=True):
+        create_notification(
+            recipient=admin_user,
+            actor=actor,
+            notification_type=Notification.DISPUTE,
+            title=title,
+            description=description,
+            related_object=related_object,
+        )
+
+
+def restore_task_state_after_dispute(task):
+    if task.client_completion_signature:
+        task.status = 'completed'
+    elif task.completed_at:
+        task.status = 'submitted'
+    elif task.client_plan_signature:
+        task.status = 'approved_to_start'
+    elif task.provider_execution_plan:
+        task.status = 'planned'
+    else:
+        task.status = 'client_defined'
+    task.save(update_fields=['status', 'updated_at'])
+
+
+def restore_phase_state_after_dispute(phase):
+    if phase.payment_acknowledged_at:
+        phase.execution_status = 'approved'
+        phase.fund_release_status = 'released'
+    elif phase.payment_proof_uploaded_at:
+        phase.execution_status = 'approved'
+        phase.fund_release_status = 'payment_submitted'
+    elif phase.client_approved_at and phase.provider_submitted_at:
+        phase.execution_status = 'approved'
+        phase.fund_release_status = 'pending_release'
+    elif phase.provider_submitted_at:
+        phase.execution_status = 'submitted'
+        phase.fund_release_status = 'pending_release'
+    elif phase.tasks.filter(status__in=['in_progress', 'submitted', 'completed']).exists():
+        phase.execution_status = 'in_progress'
+        phase.fund_release_status = 'locked'
+    else:
+        phase.execution_status = 'not_started'
+        phase.fund_release_status = 'locked'
+    phase.save(update_fields=['execution_status', 'fund_release_status', 'updated_at'])
+
+
+def ensure_admin_user(user):
+    if not user.is_authenticated or not user.is_superuser:
+        raise DjangoPermissionDenied('Only superusers can access this area.')
+
+
 # Template Views
 def login_view(request):
     """Login/Register page"""
@@ -105,6 +164,13 @@ def dashboard_view(request):
     return render(request, 'workers/dashboard.html')
 
 
+@login_required
+def admin_portal_view(request):
+    """Admin portal for superusers to manage accounts and platform oversight."""
+    ensure_admin_user(request.user)
+    return render(request, 'workers/admin_portal.html')
+
+
 def logout_view(request):
     """Logout user"""
     logout(request)
@@ -117,6 +183,26 @@ def profile_view(request):
     return render(request, 'workers/profile.html')
 
 
+def public_profile_view(request, user_id):
+    """Public-facing profile for an individual provider or company."""
+    profile_user = get_object_or_404(
+        User.objects.select_related('country'),
+        id=user_id
+    )
+    services = Service.objects.filter(provider=profile_user, is_active=True).select_related('category_ref', 'category_ref__parent')
+    return render(request, 'workers/public_profile.html', {
+        'profile_user': profile_user,
+        'services': services,
+    })
+
+
+def snag_view(request):
+    """Generic frontend-safe error page."""
+    return render(request, 'workers/snag.html', {
+        'reference': request.GET.get('ref', ''),
+    }, status=500)
+
+
 # API Views
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -127,7 +213,7 @@ def register_api(request):
         user = serializer.save()
         email_sent, email_error = send_welcome_email(user)
         return Response({
-            'message': 'Registration successful. Please log in with your new password.',
+            'message': 'Registration successful. Your account is pending admin approval before you can log in.',
             'user': UserSerializer(user).data,
             'email_sent': email_sent,
             'email_error': email_error,
@@ -148,6 +234,19 @@ def login_api(request):
     
     user = authenticate(request, username=username, password=password)
     if user is not None:
+        if not user.is_active:
+            return Response({'error': 'Your account is disabled. Please contact support.'}, status=status.HTTP_403_FORBIDDEN)
+        if not user.can_access_platform:
+            if user.verification_status == 'rejected':
+                note = f" Reason: {user.verification_notes}" if user.verification_notes else ''
+                return Response(
+                    {'error': f'Your verification was not approved.{note} Please contact an administrator to review your account or register again with updated documents.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            return Response(
+                {'error': 'Your account is pending admin verification. You can log in once your verification documents are approved.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         login(request, user)
         return Response({
             'message': 'Login successful',
@@ -161,17 +260,124 @@ def login_api(request):
 def current_user_api(request):
     """Get or update current user info"""
     if request.method == 'GET':
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context={'request': request}).data)
 
-    editable_fields = {'first_name', 'last_name', 'phone', 'location', 'bio'}
+    editable_fields = {
+        'first_name', 'last_name', 'phone', 'location', 'bio', 'account_type',
+        'company_name', 'company_website', 'vat_number', 'country', 'verification_document'
+    }
     data = {key: value for key, value in request.data.items() if key in editable_fields}
     if not data:
         return Response({'error': 'No editable fields provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    serializer = UserSerializer(request.user, data=data, partial=True)
+    serializer = UserSerializer(request.user, data=data, partial=True, context={'request': request})
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    return Response(serializer.data)
+    user = serializer.save()
+    if 'verification_document' in data:
+        user.verification_status = 'pending'
+        user.verification_notes = ''
+        user.verified_at = None
+        user.reviewed_by = None
+        user.save(update_fields=['verification_status', 'verification_notes', 'verified_at', 'reviewed_by'])
+    return Response(UserSerializer(user, context={'request': request}).data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_overview_api(request):
+    ensure_admin_user(request.user)
+
+    verification_counts = User.objects.aggregate(
+        pending=Count('id', filter=Q(verification_status='pending')),
+        approved=Count('id', filter=Q(verification_status='approved')),
+        rejected=Count('id', filter=Q(verification_status='rejected')),
+    )
+    account_mix = User.objects.aggregate(
+        clients=Count('id', filter=Q(current_role='client')),
+        providers=Count('id', filter=Q(current_role='provider')),
+        hybrid=Count('id', filter=Q(current_role='both')),
+        companies=Count('id', filter=Q(account_type='company')),
+        individuals=Count('id', filter=Q(account_type='individual')),
+        active_accounts=Count('id', filter=Q(is_active=True)),
+    )
+    open_disputes = ProjectDispute.objects.filter(status='open').count()
+    shared_pricing = Invoice.objects.aggregate(
+        average=Avg('total_amount'),
+        minimum=Min('total_amount'),
+        maximum=Max('total_amount'),
+    )
+    pending_users = User.objects.filter(verification_status='pending').order_by('date_joined')[:6]
+    recent_disputes = ProjectDispute.objects.select_related('tracker', 'raised_by').order_by('-created_at')[:6]
+
+    return Response({
+        'verification': verification_counts,
+        'accounts': account_mix,
+        'platform': {
+            'services': Service.objects.count(),
+            'jobs_open': Job.objects.filter(status='open').count(),
+            'jobs_in_progress': Job.objects.filter(status='in_progress').count(),
+            'rfqs_total': RFQ.objects.count(),
+            'invoices_total': Invoice.objects.count(),
+            'open_disputes': open_disputes,
+        },
+        'shared_pricing': {
+            'average': shared_pricing['average'] or 0,
+            'minimum': shared_pricing['minimum'] or 0,
+            'maximum': shared_pricing['maximum'] or 0,
+        },
+        'pending_users': AdminUserSerializer(pending_users, many=True, context={'request': request}).data,
+        'recent_disputes': ProjectDisputeSerializer(recent_disputes, many=True, context={'request': request}).data,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_users_api(request):
+    ensure_admin_user(request.user)
+
+    queryset = User.objects.select_related('country').order_by('-date_joined')
+    verification_filter = request.query_params.get('verification_status')
+    role_filter = request.query_params.get('role')
+    account_type_filter = request.query_params.get('account_type')
+    q = request.query_params.get('q')
+
+    if verification_filter:
+        queryset = queryset.filter(verification_status=verification_filter)
+    if role_filter:
+        queryset = queryset.filter(current_role=role_filter)
+    if account_type_filter:
+        queryset = queryset.filter(account_type=account_type_filter)
+    if q:
+        queryset = queryset.filter(
+            Q(username__icontains=q) |
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q) |
+            Q(email__icontains=q) |
+            Q(company_name__icontains=q)
+        )
+
+    return Response(AdminUserSerializer(queryset[:150], many=True, context={'request': request}).data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def admin_user_detail_api(request, user_id):
+    ensure_admin_user(request.user)
+    target_user = get_object_or_404(User, id=user_id)
+    serializer = AdminUserSerializer(target_user, data=request.data, partial=True, context={'request': request})
+    serializer.is_valid(raise_exception=True)
+    updated_user = serializer.save()
+
+    if updated_user.verification_status == 'approved' and not updated_user.verified_at:
+        updated_user.verified_at = timezone.now()
+        updated_user.reviewed_by = request.user
+        updated_user.save(update_fields=['verified_at', 'reviewed_by'])
+    elif updated_user.verification_status == 'rejected':
+        updated_user.verified_at = None
+        updated_user.reviewed_by = request.user
+        updated_user.save(update_fields=['verified_at', 'reviewed_by'])
+
+    return Response(AdminUserSerializer(updated_user, context={'request': request}).data)
 
 
 @api_view(['PATCH'])
@@ -259,7 +465,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
             actor=request.user,
             notification_type=Notification.MESSAGE,
             title='New service inquiry',
-            description=f'{request.user.get_full_name()} sent you a message about {service.title}.',
+            description=f'{request.user.display_name} sent you a message about {service.title}.',
             related_object=message
         )
         send_message_email(message)
@@ -397,7 +603,7 @@ class JobViewSet(viewsets.ModelViewSet):
             job.save()
 
             if job.assigned_provider:
-                description = f'{job.client.get_full_name()} updated {job.title} to {job.get_status_display()}.'
+                description = f'{job.client.display_name} updated {job.title} to {job.get_status_display()}.'
                 if note:
                     description += f' Note: {note}'
                 create_notification(
@@ -447,7 +653,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
             actor=self.request.user,
             notification_type=Notification.REVIEW,
             title='New review received',
-            description=f'{self.request.user.get_full_name()} left a {review.rating}-star review.',
+            description=f'{self.request.user.display_name} left a {review.rating}-star review.',
             related_object=review
         )
         send_review_email_notification(review)
@@ -580,7 +786,7 @@ class MessageViewSet(viewsets.ModelViewSet):
                 actor=request.user,
                 notification_type=Notification.MESSAGE,
                 title='New message received',
-                description=f'{request.user.get_full_name()} sent you a new message.',
+                description=f'{request.user.display_name} sent you a new message.',
                 related_object=message
             )
             send_message_email(message)
@@ -633,7 +839,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             latest = convo['latest_message']
             conversations.append({
                 'user_id': convo['other_user'].id,
-                'user_name': convo['other_user'].get_full_name(),
+                'user_name': convo['other_user'].display_name,
                 'user_initials': convo['other_user'].avatar_initials,
                 'latest_message': latest.content,
                 'timestamp': latest.created_at.isoformat(),
@@ -699,7 +905,7 @@ class BidViewSet(viewsets.ModelViewSet):
             actor=user,
             notification_type=Notification.BID,
             title=f'New bid on {job.title}',
-            description=f'{user.get_full_name()} placed a bid for ${bid.amount}.',
+            description=f'{user.display_name} placed a bid for {user.currency_symbol}{bid.amount}.',
             related_object=bid
         )
         send_bid_email_notification(
@@ -707,7 +913,7 @@ class BidViewSet(viewsets.ModelViewSet):
             actor=user,
             subject=f'New bid on {job.title}',
             heading='New Bid Received',
-            intro=f'{user.get_full_name() or user.username} placed a new bid on your job.',
+            intro=f'{user.display_name} placed a new bid on your job.',
             job_title=job.title,
             amount=bid.amount,
             extra_label='Proposal Timeline',
@@ -742,7 +948,7 @@ class BidViewSet(viewsets.ModelViewSet):
             actor=request.user,
             subject=f'Bid accepted for {bid.job.title}',
             heading='Bid Accepted',
-            intro=f'{request.user.get_full_name() or request.user.username} accepted your bid.',
+            intro=f'{request.user.display_name} accepted your bid.',
             job_title=bid.job.title,
             amount=bid.amount,
             extra_label='Status',
@@ -787,7 +993,7 @@ class RFQViewSet(viewsets.ModelViewSet):
             actor=user,
             notification_type=Notification.RFQ,
             title=f'New RFQ for {service.title}',
-            description=f'{user.get_full_name()} sent an RFQ: {rfq.title}.',
+            description=f'{user.display_name} sent an RFQ: {rfq.title}.',
             related_object=rfq
         )
         send_rfq_email(rfq)
@@ -841,7 +1047,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             actor=user,
             notification_type=Notification.INVOICE,
             title=f'New invoice for {rfq.title}',
-            description=f'{user.get_full_name()} sent you an invoice for ${invoice.total_amount}.',
+            description=f'{user.display_name} sent you an invoice for {user.currency_symbol}{invoice.total_amount}.',
             related_object=invoice
         )
         send_invoice_email(invoice)
@@ -869,6 +1075,525 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             invoice.rfq.status = 'closed'
             invoice.rfq.save(update_fields=['status', 'updated_at'])
         return Response(self.get_serializer(invoice).data)
+
+    @action(detail=True, methods=['get'])
+    def download(self, request, pk=None):
+        invoice = self.get_object()
+        if request.user not in {invoice.client, invoice.provider} and not request.user.is_staff:
+            return Response({'error': 'You do not have permission to download this invoice.'}, status=status.HTTP_403_FORBIDDEN)
+
+        line_items = invoice.line_items or 'No line items provided.'
+        notes = invoice.notes or 'No additional notes.'
+        currency_symbol = invoice.client.currency_symbol
+        currency_code = invoice.client.currency_code
+        safe_title = ''.join(char if char.isalnum() else '-' for char in invoice.title.lower()).strip('-') or f'invoice-{invoice.id}'
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{invoice.title}</title>
+  <style>
+    body {{ font-family: Georgia, 'Times New Roman', serif; margin: 0; background: #f6f1e6; color: #15120d; }}
+    .page {{ max-width: 920px; margin: 32px auto; background: #fffdf8; border: 1px solid #ddc48a; padding: 40px; }}
+    .hero {{ display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #c59a32; padding-bottom: 24px; margin-bottom: 24px; }}
+    .brand {{ font-size: 30px; font-weight: 700; letter-spacing: 0.04em; color: #8f6918; }}
+    .eyebrow {{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: #8f6918; }}
+    .panel {{ border: 1px solid #ead9b3; padding: 18px; margin-top: 18px; background: #fffaf0; }}
+    .grid {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }}
+    .label {{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #8f6918; margin-bottom: 6px; }}
+    .value {{ font-size: 16px; line-height: 1.7; white-space: pre-wrap; }}
+    .total {{ font-size: 28px; font-weight: 700; color: #15120d; }}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <div>
+        <div class="brand">Vashandi</div>
+        <div class="eyebrow">Stored Invoice Export</div>
+      </div>
+      <div>
+        <div class="label">Invoice</div>
+        <div class="value">{invoice.title}</div>
+        <div class="label" style="margin-top: 10px;">Status</div>
+        <div class="value">{invoice.get_status_display()}</div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <div class="label">Provider</div>
+        <div class="value">{invoice.provider.display_name}</div>
+        <div class="label" style="margin-top: 10px;">Client</div>
+        <div class="value">{invoice.client.display_name}</div>
+      </div>
+      <div class="panel">
+        <div class="label">Linked RFQ</div>
+        <div class="value">{invoice.rfq.title if invoice.rfq else 'Direct invoice'}</div>
+        <div class="label" style="margin-top: 10px;">Due Date</div>
+        <div class="value">{invoice.due_date or 'Not specified'}</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="label">Scope of Work</div>
+      <div class="value">{invoice.scope_of_work}</div>
+    </div>
+    <div class="panel">
+      <div class="label">Line Items</div>
+      <div class="value">{line_items}</div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <div class="label">Notes</div>
+        <div class="value">{notes}</div>
+      </div>
+      <div class="panel">
+        <div class="label">Subtotal</div>
+        <div class="value">{currency_symbol}{invoice.subtotal} {currency_code}</div>
+        <div class="label" style="margin-top: 10px;">Tax</div>
+        <div class="value">{currency_symbol}{invoice.tax_amount} {currency_code}</div>
+        <div class="label" style="margin-top: 10px;">Total</div>
+        <div class="total">{currency_symbol}{invoice.total_amount} {currency_code}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>"""
+        response = HttpResponse(html, content_type='text/html; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{safe_title}.html"'
+        return response
+
+
+class ProjectTrackerViewSet(viewsets.ModelViewSet):
+    """Milestone-based project tracker for awarded jobs."""
+
+    queryset = ProjectTracker.objects.select_related('job', 'client', 'provider').prefetch_related('phases__tasks', 'disputes')
+    serializer_class = ProjectTrackerSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.is_staff:
+            return queryset
+        return queryset.filter(Q(client=user) | Q(provider=user))
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.current_role not in {'client', 'both'}:
+            raise PermissionDenied('Only clients can create project trackers.')
+
+        job = serializer.validated_data['job']
+        if job.client != user:
+            raise PermissionDenied('You can only create a tracker for your own job.')
+        if not job.assigned_provider:
+            raise PermissionDenied('Assign a provider before creating a project tracker.')
+
+        client_signature = serializer.validated_data.get('client_signature', '').strip()
+        tracker = serializer.save(
+            client=user,
+            provider=job.assigned_provider,
+            status='draft',
+            client_signed_at=timezone.now() if client_signature else None,
+        )
+        create_notification(
+            recipient=job.assigned_provider,
+            actor=user,
+            notification_type=Notification.STATUS,
+            title='New project tracker created',
+            description=f'{user.display_name} created a project tracker for {job.title}.',
+            related_object=tracker,
+        )
+
+    @action(detail=True, methods=['post'])
+    def provider_sign(self, request, pk=None):
+        tracker = self.get_object()
+        if tracker.provider != request.user:
+            return Response({'error': 'Only the assigned provider can sign the tracker.'}, status=status.HTTP_403_FORBIDDEN)
+
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Provider signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tracker.provider_signature = signature
+        tracker.provider_signed_at = timezone.now()
+        tracker.status = 'pending_client_approval'
+        tracker.save(update_fields=['provider_signature', 'provider_signed_at', 'status', 'updated_at'])
+        return Response(self.get_serializer(tracker).data)
+
+    @action(detail=True, methods=['post'])
+    def client_approve(self, request, pk=None):
+        tracker = self.get_object()
+        if tracker.client != request.user:
+            return Response({'error': 'Only the client can approve the tracker.'}, status=status.HTTP_403_FORBIDDEN)
+
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Client signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not tracker.provider_signature:
+            return Response({'error': 'Wait for the provider to sign the tracker before client approval.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not tracker.phases.exists():
+            return Response({'error': 'Add at least one phase before approving the tracker.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tracker.client_signature = signature
+        tracker.client_signed_at = timezone.now()
+        tracker.approved_at = timezone.now()
+        tracker.status = 'active'
+        tracker.save(update_fields=['client_signature', 'client_signed_at', 'approved_at', 'status', 'updated_at'])
+        return Response(self.get_serializer(tracker).data)
+
+
+class ProjectPhaseViewSet(viewsets.ModelViewSet):
+    queryset = ProjectPhase.objects.select_related('tracker', 'tracker__client', 'tracker__provider').prefetch_related('tasks')
+    serializer_class = ProjectPhaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        tracker_id = self.request.query_params.get('tracker')
+        if not user.is_staff:
+            queryset = queryset.filter(Q(tracker__client=user) | Q(tracker__provider=user))
+        if tracker_id:
+            queryset = queryset.filter(tracker_id=tracker_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        tracker = serializer.validated_data['tracker']
+        if tracker.client != self.request.user:
+            raise PermissionDenied('Only the client can add project phases.')
+        serializer.save()
+
+    @action(detail=True, methods=['post'])
+    def submit_plan(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can submit a phase plan.'}, status=status.HTTP_403_FORBIDDEN)
+
+        provider_plan = request.data.get('provider_plan', '').strip()
+        if not provider_plan:
+            return Response({'error': 'Provider plan is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        phase.provider_plan = provider_plan
+        phase.provider_notes = request.data.get('provider_notes', '').strip()
+        phase.plan_status = 'pending_client_approval'
+        phase.save(update_fields=['provider_plan', 'provider_notes', 'plan_status', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def approve_plan(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.client != request.user:
+            return Response({'error': 'Only the client can approve a phase plan.'}, status=status.HTTP_403_FORBIDDEN)
+
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Client signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        phase.client_approval_signature = signature
+        phase.client_approved_at = timezone.now()
+        phase.plan_status = 'approved'
+        phase.save(update_fields=['client_approval_signature', 'client_approved_at', 'plan_status', 'updated_at'])
+        if phase.tracker.status == 'draft':
+            phase.tracker.status = 'pending_client_approval'
+            phase.tracker.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def start_phase(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can start a phase.'}, status=status.HTTP_403_FORBIDDEN)
+        if phase.plan_status != 'approved':
+            return Response({'error': 'Approve the phase plan before starting work.'}, status=status.HTTP_400_BAD_REQUEST)
+        if phase.tracker.phases.filter(sequence__lt=phase.sequence).exclude(fund_release_status='released').exists():
+            return Response({'error': 'Previous phases must be paid and acknowledged before the next phase can start.'}, status=status.HTTP_400_BAD_REQUEST)
+        phase.execution_status = 'in_progress'
+        phase.save(update_fields=['execution_status', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def submit_completion(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can submit phase completion.'}, status=status.HTTP_403_FORBIDDEN)
+        if phase.tasks.exclude(status='completed').exists():
+            return Response({'error': 'Complete all tasks before submitting the phase.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Provider signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        phase.provider_submission_signature = signature
+        phase.provider_evidence_notes = request.data.get('provider_evidence_notes', '').strip()
+        if request.FILES.get('provider_evidence_image'):
+            phase.provider_evidence_image = request.FILES['provider_evidence_image']
+        phase.provider_submitted_at = timezone.now()
+        phase.execution_status = 'submitted'
+        phase.fund_release_status = 'pending_release'
+        phase.save()
+        phase.tracker.status = 'in_review'
+        phase.tracker.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def approve_completion(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.client != request.user:
+            return Response({'error': 'Only the client can approve phase completion.'}, status=status.HTTP_403_FORBIDDEN)
+
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Client signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        phase.client_approval_signature = signature
+        phase.client_approved_at = timezone.now()
+        phase.execution_status = 'approved'
+        phase.fund_release_status = 'pending_release'
+        phase.save(update_fields=['client_approval_signature', 'client_approved_at', 'execution_status', 'fund_release_status', 'updated_at'])
+
+        create_notification(
+            recipient=phase.tracker.provider,
+            actor=request.user,
+            notification_type=Notification.STATUS,
+            title='Phase approved, payment proof pending',
+            description=f'{request.user.display_name} approved {phase.title}. Upload payment proof next so the phase can be released.',
+            related_object=phase,
+        )
+
+        tracker = phase.tracker
+        tracker.status = 'active'
+        tracker.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def submit_payment_proof(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.client != request.user:
+            return Response({'error': 'Only the client can submit payment proof.'}, status=status.HTTP_403_FORBIDDEN)
+        if phase.execution_status != 'approved':
+            return Response({'error': 'Approve the completed phase before uploading payment proof.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not request.FILES.get('payment_proof_file'):
+            return Response({'error': 'Payment proof file is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        phase.payment_proof_file = request.FILES['payment_proof_file']
+        phase.payment_proof_notes = request.data.get('payment_proof_notes', '').strip()
+        phase.payment_proof_uploaded_at = timezone.now()
+        phase.fund_release_status = 'payment_submitted'
+        phase.save(update_fields=['payment_proof_file', 'payment_proof_notes', 'payment_proof_uploaded_at', 'fund_release_status', 'updated_at'])
+
+        create_notification(
+            recipient=phase.tracker.provider,
+            actor=request.user,
+            notification_type=Notification.INVOICE,
+            title='Payment proof uploaded',
+            description=f'{request.user.display_name} uploaded payment proof for {phase.title}. Acknowledge receipt to release the phase.',
+            related_object=phase,
+        )
+        return Response(self.get_serializer(phase).data)
+
+    @action(detail=True, methods=['post'])
+    def acknowledge_payment(self, request, pk=None):
+        phase = self.get_object()
+        if phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can acknowledge payment.'}, status=status.HTTP_403_FORBIDDEN)
+        if phase.fund_release_status != 'payment_submitted':
+            return Response({'error': 'Payment proof must be uploaded before acknowledgement.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Acknowledgement signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        phase.payment_acknowledgement_signature = signature
+        phase.payment_acknowledgement_notes = request.data.get('payment_acknowledgement_notes', '').strip()
+        phase.payment_acknowledged_at = timezone.now()
+        phase.fund_release_status = 'released'
+        phase.save(update_fields=[
+            'payment_acknowledgement_signature', 'payment_acknowledgement_notes',
+            'payment_acknowledged_at', 'fund_release_status', 'updated_at'
+        ])
+
+        tracker = phase.tracker
+        if not tracker.phases.exclude(execution_status='approved', fund_release_status='released').exists():
+            tracker.status = 'completed'
+        else:
+            tracker.status = 'active'
+        tracker.save(update_fields=['status', 'updated_at'])
+
+        create_notification(
+            recipient=phase.tracker.client,
+            actor=request.user,
+            notification_type=Notification.INVOICE,
+            title='Payment acknowledged',
+            description=f'{request.user.display_name} acknowledged payment for {phase.title}.',
+            related_object=phase,
+        )
+        return Response(self.get_serializer(phase).data)
+
+
+class ProjectTaskViewSet(viewsets.ModelViewSet):
+    queryset = ProjectTask.objects.select_related('phase', 'phase__tracker')
+    serializer_class = ProjectTaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        phase_id = self.request.query_params.get('phase')
+        if not user.is_staff:
+            queryset = queryset.filter(Q(phase__tracker__client=user) | Q(phase__tracker__provider=user))
+        if phase_id:
+            queryset = queryset.filter(phase_id=phase_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        phase = serializer.validated_data['phase']
+        if phase.tracker.client != self.request.user:
+            raise PermissionDenied('Only the client can define phase tasks.')
+        serializer.save()
+
+    @action(detail=True, methods=['post'])
+    def provider_plan(self, request, pk=None):
+        task = self.get_object()
+        if task.phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can draft the task plan.'}, status=status.HTTP_403_FORBIDDEN)
+
+        task.provider_execution_plan = request.data.get('provider_execution_plan', '').strip()
+        task.provider_description = request.data.get('provider_description', '').strip()
+        if not task.provider_execution_plan:
+            return Response({'error': 'Task execution plan is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        task.status = 'planned'
+        task.provider_updated_at = timezone.now()
+        task.save(update_fields=['provider_execution_plan', 'provider_description', 'status', 'provider_updated_at', 'updated_at'])
+        return Response(self.get_serializer(task).data)
+
+    @action(detail=True, methods=['post'])
+    def approve_plan(self, request, pk=None):
+        task = self.get_object()
+        if task.phase.tracker.client != request.user:
+            return Response({'error': 'Only the client can approve the task plan.'}, status=status.HTTP_403_FORBIDDEN)
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Client signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        task.client_plan_signature = signature
+        task.client_approved_at = timezone.now()
+        task.status = 'approved_to_start'
+        task.save(update_fields=['client_plan_signature', 'client_approved_at', 'status', 'updated_at'])
+        return Response(self.get_serializer(task).data)
+
+    @action(detail=True, methods=['post'])
+    def start(self, request, pk=None):
+        task = self.get_object()
+        if task.phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can start this task.'}, status=status.HTTP_403_FORBIDDEN)
+        if task.status != 'approved_to_start':
+            return Response({'error': 'Approve the task plan before starting.'}, status=status.HTTP_400_BAD_REQUEST)
+        task.status = 'in_progress'
+        task.save(update_fields=['status', 'updated_at'])
+        return Response(self.get_serializer(task).data)
+
+    @action(detail=True, methods=['post'])
+    def submit_completion(self, request, pk=None):
+        task = self.get_object()
+        if task.phase.tracker.provider != request.user:
+            return Response({'error': 'Only the provider can submit task completion.'}, status=status.HTTP_403_FORBIDDEN)
+        task.completion_notes = request.data.get('completion_notes', '').strip()
+        task.status = 'submitted'
+        task.completed_at = timezone.now()
+        task.save(update_fields=['completion_notes', 'status', 'completed_at', 'updated_at'])
+        return Response(self.get_serializer(task).data)
+
+    @action(detail=True, methods=['post'])
+    def approve_completion(self, request, pk=None):
+        task = self.get_object()
+        if task.phase.tracker.client != request.user:
+            return Response({'error': 'Only the client can approve task completion.'}, status=status.HTTP_403_FORBIDDEN)
+        signature = request.data.get('signature', '').strip()
+        if not signature:
+            return Response({'error': 'Client signature is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        task.client_completion_signature = signature
+        task.client_approved_at = timezone.now()
+        task.status = 'completed'
+        task.save(update_fields=['client_completion_signature', 'client_approved_at', 'status', 'updated_at'])
+        return Response(self.get_serializer(task).data)
+
+
+class ProjectDisputeViewSet(viewsets.ModelViewSet):
+    queryset = ProjectDispute.objects.select_related('tracker', 'phase', 'task', 'raised_by', 'resolved_by')
+    serializer_class = ProjectDisputeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.is_staff:
+            return queryset
+        return queryset.filter(Q(tracker__client=user) | Q(tracker__provider=user))
+
+    def perform_create(self, serializer):
+        tracker = serializer.validated_data['tracker']
+        user = self.request.user
+        if user not in {tracker.client, tracker.provider} and not user.is_staff:
+            raise PermissionDenied('Only project participants can raise a dispute.')
+
+        dispute = serializer.save(raised_by=user)
+        tracker.status = 'disputed'
+        tracker.save(update_fields=['status', 'updated_at'])
+        if dispute.phase:
+            dispute.phase.execution_status = 'disputed'
+            dispute.phase.fund_release_status = 'held'
+            dispute.phase.save(update_fields=['execution_status', 'fund_release_status', 'updated_at'])
+        if dispute.task:
+            dispute.task.status = 'disputed'
+            dispute.task.save(update_fields=['status', 'updated_at'])
+
+        notify_admins(
+            actor=user,
+            title='Project dispute flagged',
+            description=f'{user.display_name} flagged a dispute on {tracker.title}.',
+            related_object=dispute,
+        )
+
+    @action(detail=True, methods=['post'])
+    def resolve(self, request, pk=None):
+        dispute = self.get_object()
+        if not request.user.is_staff:
+            return Response({'error': 'Only admins can resolve disputes.'}, status=status.HTTP_403_FORBIDDEN)
+
+        resolution = request.data.get('admin_resolution', '').strip()
+        status_value = request.data.get('status', 'resolved')
+        if not resolution:
+            return Response({'error': 'Admin resolution notes are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if status_value not in {'resolved', 'dismissed'}:
+            return Response({'error': 'Invalid dispute status.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        dispute.admin_resolution = resolution
+        dispute.status = status_value
+        dispute.resolved_by = request.user
+        dispute.resolved_at = timezone.now()
+        dispute.save(update_fields=['admin_resolution', 'status', 'resolved_by', 'resolved_at', 'updated_at'])
+
+        if dispute.task and dispute.task.status == 'disputed':
+            restore_task_state_after_dispute(dispute.task)
+        if dispute.phase and dispute.phase.execution_status == 'disputed':
+            restore_phase_state_after_dispute(dispute.phase)
+
+        tracker = dispute.tracker
+        if not tracker.disputes.filter(status='open').exists():
+            tracker.status = 'active'
+            tracker.save(update_fields=['status', 'updated_at'])
+
+        for participant in {tracker.client, tracker.provider}:
+            create_notification(
+                recipient=participant,
+                actor=request.user,
+                notification_type=Notification.DISPUTE,
+                title='Project dispute resolved',
+                description=f'An admin marked the dispute on {tracker.title} as {status_value}.',
+                related_object=dispute,
+            )
+        return Response(self.get_serializer(dispute).data)
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
@@ -920,7 +1645,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
             actor=request.user,
             subject=f'Bid update for {bid.job.title}',
             heading='Bid Rejected',
-            intro=f'{request.user.get_full_name() or request.user.username} rejected your bid.',
+            intro=f'{request.user.display_name} rejected your bid.',
             job_title=bid.job.title,
             amount=bid.amount,
             extra_label='Status',
@@ -958,7 +1683,7 @@ class TradeCategoryViewSet(viewsets.ReadOnlyModelViewSet):
             actor=request.user,
             notification_type=Notification.BID,
             title='Bid withdrawn',
-            description=f'{request.user.get_full_name()} withdrew their bid on {bid.job.title}.',
+            description=f'{request.user.display_name} withdrew their bid on {bid.job.title}.',
             related_object=bid.job
         )
         send_bid_email_notification(
@@ -966,7 +1691,7 @@ class TradeCategoryViewSet(viewsets.ReadOnlyModelViewSet):
             actor=request.user,
             subject=f'Bid withdrawn for {bid.job.title}',
             heading='Bid Withdrawn',
-            intro=f'{request.user.get_full_name() or request.user.username} withdrew their bid.',
+            intro=f'{request.user.display_name} withdrew their bid.',
             job_title=bid.job.title,
             amount=bid.amount,
             extra_label='Status',
@@ -974,6 +1699,14 @@ class TradeCategoryViewSet(viewsets.ReadOnlyModelViewSet):
         )
         serializer = self.get_serializer(bid)
         return Response(serializer.data)
+
+
+class CountryViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only African country directory."""
+
+    serializer_class = CountrySerializer
+    permission_classes = [permissions.AllowAny]
+    queryset = Country.objects.filter(is_active=True).order_by('name')
 
 
 @api_view(['GET'])
