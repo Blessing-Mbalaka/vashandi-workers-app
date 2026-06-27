@@ -2101,14 +2101,21 @@
         }
 
         .nav-container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
             max-width: none;
             gap: 1rem;
         }
 
         .nav-right {
+            display: flex !important;
+            align-items: center !important;
             gap: 0.8rem !important;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: flex-end;
+            width: 100%;
+            min-width: 0;
         }
 
         .logo,
@@ -2279,7 +2286,7 @@
         }
 
         .app-shell {
-            grid-template-columns: 290px minmax(0, 1fr) !important;
+            grid-template-columns: minmax(0, 1fr) !important;
             gap: 0 !important;
             min-height: 100vh;
             align-items: start !important;
@@ -2392,6 +2399,7 @@
             padding: 1.4rem 1.5rem 2rem !important;
             box-shadow: none !important;
             margin-left: 290px;
+            width: calc(100% - 290px);
         }
 
         .dashboard-header {
@@ -2544,7 +2552,7 @@
 
         @media (max-width: 1280px) {
             .search-bar {
-                width: 240px;
+                width: 220px;
             }
         }
 
@@ -2558,6 +2566,7 @@
             .nav-container {
                 align-items: flex-start !important;
                 flex-direction: column !important;
+                justify-content: flex-start !important;
             }
 
             nav .logo {
@@ -2567,6 +2576,7 @@
             .nav-right {
                 width: 100%;
                 justify-content: space-between;
+                flex-wrap: wrap;
             }
 
             .search-bar {
@@ -2610,6 +2620,7 @@
             .workspace-area {
                 padding: 1rem !important;
                 margin-left: 0;
+                width: 100%;
             }
 
             .workspace-footer {
