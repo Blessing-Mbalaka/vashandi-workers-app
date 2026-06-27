@@ -1775,6 +1775,15 @@ def dashboard_stats_api(request):
     """Get dashboard statistics"""
     unread_messages = 0
     unread_notifications = 0
+    active_provider_users = User.objects.filter(
+        current_role__in=['provider', 'both'],
+        is_active=True,
+    )
+    approved_active_provider_users = active_provider_users.filter(verification_status='approved')
+    active_company_count = approved_active_provider_users.filter(account_type='company').count()
+    active_worker_count = approved_active_provider_users.filter(account_type='individual').count()
+    active_provider_total = approved_active_provider_users.count()
+    active_service_count = Service.objects.filter(is_active=True).count()
     if request.user.is_authenticated:
         unread_messages = Message.objects.filter(recipient=request.user, is_read=False).count()
         unread_notifications = Notification.objects.filter(recipient=request.user, is_read=False).count()
@@ -1797,12 +1806,19 @@ def dashboard_stats_api(request):
                     service__provider=request.user
                 ).count(),
                 'pending_bids': Bid.objects.filter(provider=request.user, withdrawn=False, is_accepted=False).count(),
+                'active_workers': active_worker_count,
+                'active_companies': active_company_count,
+                'active_providers_total': active_provider_total,
+                'active_services': active_service_count,
                 'unread_messages': unread_messages,
                 'unread_notifications': unread_notifications,
             }
         else:
             stats = {
-                'active_workers': Service.objects.filter(is_active=True).count(),
+                'active_workers': active_worker_count,
+                'active_companies': active_company_count,
+                'active_providers_total': active_provider_total,
+                'active_services': active_service_count,
                 'jobs_posted': Job.objects.filter(client=request.user).count(),
                 'satisfaction_rate': 98,  # Can be calculated based on reviews
                 'support_available': '24/7',
@@ -1812,7 +1828,10 @@ def dashboard_stats_api(request):
             }
     else:
         stats = {
-            'active_workers': Service.objects.filter(is_active=True).count(),
+            'active_workers': active_worker_count,
+            'active_companies': active_company_count,
+            'active_providers_total': active_provider_total,
+            'active_services': active_service_count,
             'jobs_posted': Job.objects.count(),
             'satisfaction_rate': 98,
             'support_available': '24/7',

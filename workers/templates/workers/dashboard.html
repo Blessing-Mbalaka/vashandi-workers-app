@@ -2550,6 +2550,188 @@
             background: linear-gradient(180deg, #ffffff 0%, #fdfbf7 100%) !important;
         }
 
+        .workspace-area::before {
+            content: "";
+            position: fixed;
+            inset: 96px 1.5rem 1.5rem 315px;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 14px 14px, rgba(212, 175, 55, 0.08) 0, rgba(212, 175, 55, 0.08) 2px, transparent 2.5px),
+                linear-gradient(135deg, rgba(180, 136, 17, 0.045) 25%, transparent 25%, transparent 50%, rgba(180, 136, 17, 0.045) 50%, rgba(180, 136, 17, 0.045) 75%, transparent 75%, transparent);
+            background-size: 28px 28px, 72px 72px;
+            opacity: 0.45;
+            z-index: 0;
+        }
+
+        .workspace-area > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .services-section {
+            position: relative;
+            overflow: hidden;
+            padding: 1.25rem;
+            border: 1px solid var(--pro-border);
+            border-radius: 4px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(253, 251, 247, 0.98) 100%);
+            box-shadow: 0 18px 32px rgba(23, 20, 17, 0.04);
+        }
+
+        .services-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(45deg, rgba(212, 175, 55, 0.03) 12.5%, transparent 12.5%, transparent 50%, rgba(212, 175, 55, 0.03) 50%, rgba(212, 175, 55, 0.03) 62.5%, transparent 62.5%, transparent),
+                linear-gradient(-45deg, rgba(23, 20, 17, 0.02) 12.5%, transparent 12.5%, transparent 50%, rgba(23, 20, 17, 0.02) 50%, rgba(23, 20, 17, 0.02) 62.5%, transparent 62.5%, transparent);
+            background-size: 56px 56px;
+            opacity: 0.55;
+            pointer-events: none;
+        }
+
+        .services-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header.service-browser-header {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .service-browser-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .service-browser-copy p {
+            margin-top: 0.35rem;
+        }
+
+        .service-browser-toggle {
+            min-width: 240px;
+        }
+
+        .service-browser-toggle .button-with-icon {
+            width: 100%;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .service-browser-toggle .button-icon:last-child {
+            transition: transform 0.2s ease;
+        }
+
+        .service-browser-toggle[aria-expanded="true"] .button-icon:last-child {
+            transform: rotate(180deg);
+        }
+
+        .filter-buttons {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.85rem !important;
+        }
+
+        .category-browser {
+            display: none;
+            padding-top: 0.25rem;
+        }
+
+        .category-browser.open {
+            display: block;
+        }
+
+        .trade-filter-group {
+            margin: 0 !important;
+            border: 1px solid rgba(187, 169, 130, 0.6) !important;
+            border-radius: 4px !important;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(249, 244, 232, 0.98) 100%) !important;
+            box-shadow: 0 12px 22px rgba(23, 20, 17, 0.04) !important;
+        }
+
+        .trade-filter-summary {
+            min-height: 68px;
+            display: flex;
+            align-items: center;
+            padding: 1rem 3rem 1rem 1rem !important;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .trade-filter-summary::after {
+            right: 1rem !important;
+        }
+
+        .trade-subfilters {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.7rem !important;
+            padding: 0 1rem 1rem !important;
+        }
+
+        .filter-btn {
+            min-height: 52px;
+            justify-content: flex-start !important;
+            text-align: left;
+            white-space: normal;
+            background: linear-gradient(180deg, #ffffff 0%, #fcfaf4 100%) !important;
+            box-shadow: 0 10px 18px rgba(23, 20, 17, 0.04) !important;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(145deg, #ebbc33 0%, #c99812 100%) !important;
+            color: #171411 !important;
+            border-color: #b48811 !important;
+            box-shadow: 0 16px 28px rgba(180, 136, 17, 0.18) !important;
+        }
+
+        .services-grid {
+            position: relative;
+            z-index: 1;
+        }
+
+        .empty-state.empty-state-rich {
+            display: grid;
+            justify-items: center;
+            gap: 0.9rem;
+            padding: 2.4rem 1.5rem !important;
+            text-align: center;
+            background: linear-gradient(180deg, #ffffff 0%, #fcfaf4 100%) !important;
+        }
+
+        .empty-state-illustration {
+            width: 58px;
+            height: 58px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.2) 0%, rgba(180, 136, 17, 0.08) 100%);
+            color: #7b5d10;
+            border: 1px solid rgba(180, 136, 17, 0.2);
+        }
+
+        .empty-state-illustration svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .empty-state-title {
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: var(--pro-ink);
+        }
+
+        .empty-state-text {
+            color: var(--pro-muted);
+            max-width: 460px;
+        }
+
         @media (max-width: 1280px) {
             .search-bar {
                 width: 220px;
@@ -2626,6 +2808,10 @@
             .workspace-footer {
                 padding: 0 1rem 1rem !important;
             }
+
+            .workspace-area::before {
+                inset: 84px 1rem 1rem 1rem;
+            }
         }
 
         @media (max-width: 640px) {
@@ -2656,6 +2842,16 @@
 
             .sidebar-link {
                 flex: 1 1 100%;
+            }
+
+            .service-browser-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .service-browser-toggle {
+                width: 100%;
+                min-width: 0;
             }
         }
     </style>
@@ -2918,9 +3114,34 @@
 
         <!-- Services Section -->
         <div class="services-section">
-            <div class="section-header">
-                <h2 id="sectionTitle">Available Services</h2>
-                <div class="filter-buttons" id="categoryFilters"></div>
+            <div class="section-header service-browser-header">
+                <div class="service-browser-bar">
+                    <div class="service-browser-copy">
+                        <h2 id="sectionTitle">Available Services</h2>
+                        <p class="muted-text">Browse service sectors and expand a trade to reveal its specialist tiles.</p>
+                    </div>
+                    <button type="button" class="btn-secondary service-browser-toggle" id="serviceBrowserToggle" onclick="toggleServiceBrowser()" aria-expanded="true">
+                        <span class="button-with-icon">
+                            <span class="button-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="7" height="7"></rect>
+                                    <rect x="14" y="4" width="7" height="7"></rect>
+                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                </svg>
+                            </span>
+                            <span id="serviceBrowserToggleLabel">Hide Service Tiles</span>
+                            <span class="button-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 9l6 6 6-6"></path>
+                                </svg>
+                            </span>
+                        </span>
+                    </button>
+                </div>
+                <div class="category-browser open" id="categoryBrowser">
+                    <div class="filter-buttons" id="categoryFilters"></div>
+                </div>
             </div>
 
             <div class="services-grid" id="servicesGrid">
@@ -3428,6 +3649,7 @@
         let clientContentMode = 'services';
         let providerContentMode = 'mine';
         let currentWorkspaceTab = 'dashboard';
+        let serviceBrowserOpen = true;
         let servicesData = [];
         let rfqData = [];
         let invoiceData = [];
@@ -3497,6 +3719,22 @@
             });
         }
 
+        function syncServiceBrowserToggle() {
+            const browser = document.getElementById('categoryBrowser');
+            const toggle = document.getElementById('serviceBrowserToggle');
+            const label = document.getElementById('serviceBrowserToggleLabel');
+            if (!browser || !toggle || !label) return;
+
+            browser.classList.toggle('open', serviceBrowserOpen);
+            toggle.setAttribute('aria-expanded', String(serviceBrowserOpen));
+            label.textContent = serviceBrowserOpen ? 'Hide Service Tiles' : 'Browse Service Tiles';
+        }
+
+        function toggleServiceBrowser() {
+            serviceBrowserOpen = !serviceBrowserOpen;
+            syncServiceBrowserToggle();
+        }
+
         function renderCategoryFilters() {
             const container = document.getElementById('categoryFilters');
             if (!container) return;
@@ -3521,6 +3759,7 @@
 
             container.innerHTML = allMarkup + tradeMarkup;
             setActiveCategoryFilter();
+            syncServiceBrowserToggle();
         }
 
         function populateJobCategoryOptions() {
@@ -3608,19 +3847,19 @@
                     statsGrid.innerHTML = `
                         <div class="stat-card">
                             <h3>${stats.active_workers || 0}</h3>
-                            <p>Active Workers</p>
+                            <p>Individual Providers</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>${stats.active_companies || 0}</h3>
+                            <p>Provider Companies</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>${stats.active_services || 0}</h3>
+                            <p>Active Service Listings</p>
                         </div>
                         <div class="stat-card">
                             <h3>${stats.jobs_posted || 0}</h3>
                             <p>Jobs Posted</p>
-                        </div>
-                        <div class="stat-card">
-                            <h3>${stats.satisfaction_rate || 98}%</h3>
-                            <p>Satisfaction Rate</p>
-                        </div>
-                        <div class="stat-card">
-                            <h3>24/7</h3>
-                            <p>Support Available</p>
                         </div>
                     `;
                 }
@@ -3714,7 +3953,19 @@
             const grid = document.getElementById('servicesGrid');
             
             if (servicesData.length === 0) {
-                grid.innerHTML = '<p class="empty-state">No services found.</p>';
+                grid.innerHTML = `
+                    <div class="empty-state empty-state-rich">
+                        <div class="empty-state-illustration" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 21l-4.35-4.35"></path>
+                                <circle cx="11" cy="11" r="6"></circle>
+                                <path d="M8.5 11h5"></path>
+                            </svg>
+                        </div>
+                        <div class="empty-state-title">No services matched this view</div>
+                        <div class="empty-state-text">Try another trade tile, clear your search, or switch the current filter to browse more provider listings.</div>
+                    </div>
+                `;
                 return;
             }
             

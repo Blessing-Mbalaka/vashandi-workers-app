@@ -108,6 +108,38 @@ class PhaseFeatureTests(TestCase):
         self.assertIn('currency_code', payload[0])
         self.assertTrue(Country.objects.filter(code='ZW', currency_code='USD').exists())
 
+    def test_dashboard_stats_separates_workers_companies_and_services(self):
+        company_provider = User.objects.create_user(
+            username='company-provider',
+            password='pass123',
+            first_name='Company',
+            last_name='Provider',
+            current_role='provider',
+            account_type='company',
+            company_name='Build Better Ltd',
+            country=self.zimbabwe,
+            verification_status='approved',
+        )
+        Service.objects.create(
+            provider=company_provider,
+            category='plumbing',
+            category_ref=self.plumbing_category,
+            title='Corporate Plumbing Team',
+            description='Commercial plumbing support',
+            price_per_hour=95,
+            experience_years=9,
+            is_active=True,
+        )
+
+        self.authenticate(self.client_user)
+        response = self.api_client.get('/api/stats/')
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload['active_workers'], 1)
+        self.assertEqual(payload['active_companies'], 1)
+        self.assertEqual(payload['active_providers_total'], 2)
+        self.assertEqual(payload['active_services'], 2)
+
     def test_pending_verification_user_cannot_login_until_approved(self):
         pending_document = SimpleUploadedFile('company-documents.pdf', b'filecontent', content_type='application/pdf')
         register_response = self.api_client.post('/api/register/', {
