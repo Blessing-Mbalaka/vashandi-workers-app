@@ -2066,6 +2066,423 @@
                 flex-direction: column;
             }
         }
+
+        :root {
+            --pro-bg: #f3f5f8;
+            --pro-surface: #ffffff;
+            --pro-surface-muted: #f8fafc;
+            --pro-border: #d9e0ea;
+            --pro-border-strong: #bcc8d8;
+            --pro-ink: #142033;
+            --pro-muted: #64748b;
+            --pro-accent: #0f172a;
+            --pro-accent-2: #c89b3c;
+            --pro-highlight: #13b5c8;
+            --pro-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            --pro-shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        body {
+            font-family: "Segoe UI", Inter, Roboto, Arial, sans-serif !important;
+            background:
+                linear-gradient(180deg, #eef2f7 0%, var(--pro-bg) 100%) !important;
+            color: var(--pro-ink) !important;
+        }
+
+        body::before {
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(243, 245, 248, 0.92)),
+                linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px) !important;
+            background-size: auto, 28px 28px, 28px 28px !important;
+        }
+
+        nav,
+        .dashboard-header,
+        .stat-card,
+        .service-card,
+        .filters-panel,
+        .modal-content,
+        .notification-dropdown,
+        .search-bar,
+        .mode-toggle,
+        .sidebar-nav,
+        .workspace-area,
+        .workspace-footer .footer-card,
+        .empty-state {
+            background: var(--pro-surface) !important;
+            color: var(--pro-ink) !important;
+            border-color: var(--pro-border) !important;
+            box-shadow: var(--pro-shadow-soft) !important;
+        }
+
+        nav {
+            padding: 0.9rem 1.75rem;
+            border-bottom: 1px solid var(--pro-border) !important;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06) !important;
+        }
+
+        .nav-container {
+            max-width: 1500px;
+            gap: 1.25rem;
+        }
+
+        .logo,
+        .stat-card h3,
+        .accent-text {
+            background: none !important;
+            -webkit-text-fill-color: initial !important;
+            color: var(--pro-ink) !important;
+            text-shadow: none !important;
+        }
+
+        .logo {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+
+        .logo-mark,
+        .provider-avatar,
+        .avatar,
+        .button-icon {
+            background: linear-gradient(135deg, var(--pro-highlight), #0f9bb0) !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        .search-bar {
+            width: 340px;
+            border-radius: 10px !important;
+            background: var(--pro-surface-muted) !important;
+            padding: 0.8rem 1rem;
+        }
+
+        .search-bar input,
+        .search-bar input::placeholder,
+        .form-group input,
+        .form-group textarea,
+        .form-group select,
+        .filters-panel select,
+        .filters-panel input,
+        .modal-body,
+        .modal-body p,
+        .service-description,
+        .service-provider div,
+        .service-meta,
+        .notification-item,
+        .comment-text,
+        .provider-stat span,
+        .muted-text {
+            color: var(--pro-muted) !important;
+        }
+
+        .user-info h4,
+        .welcome h1,
+        .section-header h2,
+        .service-card h3,
+        .modal-header h2,
+        .provider-details h2,
+        .comment-author,
+        .meta-label,
+        #modalTitle,
+        #modalProviderName {
+            color: var(--pro-ink) !important;
+        }
+
+        .mode-toggle {
+            border-radius: 12px !important;
+            padding: 0.55rem 0.75rem;
+            gap: 0.75rem;
+            background: var(--pro-surface-muted) !important;
+        }
+
+        .toggle-label {
+            color: var(--pro-ink) !important;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+        }
+
+        .toggle-switch {
+            width: 46px;
+            height: 24px;
+            border-radius: 999px;
+            border: 1px solid var(--pro-border-strong) !important;
+            background: #dbe4ef !important;
+            box-shadow: none !important;
+        }
+
+        .toggle-switch.active {
+            background: var(--pro-highlight) !important;
+            border-color: var(--pro-highlight) !important;
+        }
+
+        .toggle-slider {
+            width: 18px;
+            height: 18px;
+            top: 2px;
+            left: 2px;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(22px);
+        }
+
+        .container {
+            max-width: 1540px !important;
+            padding: 0 1.5rem 2rem !important;
+        }
+
+        .app-shell {
+            grid-template-columns: 280px minmax(0, 1fr) !important;
+            gap: 1.25rem !important;
+        }
+
+        .sidebar-nav {
+            top: 84px !important;
+            padding: 1rem !important;
+            border-radius: 16px !important;
+            gap: 0.55rem !important;
+            box-shadow: var(--pro-shadow) !important;
+        }
+
+        .sidebar-brand {
+            padding: 0.1rem 0 0.9rem !important;
+            margin-bottom: 0.4rem !important;
+            border-bottom: 1px solid var(--pro-border) !important;
+        }
+
+        .sidebar-brand h3 {
+            margin-bottom: 0.35rem !important;
+            font-size: 1rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.04em;
+        }
+
+        .sidebar-brand p,
+        .sidebar-section-label {
+            color: var(--pro-muted) !important;
+        }
+
+        .sidebar-section-label {
+            margin: 0.8rem 0 0.25rem !important;
+            font-size: 0.72rem !important;
+            letter-spacing: 0.16em !important;
+        }
+
+        .sidebar-link {
+            min-height: 46px;
+            border-radius: 12px !important;
+            padding: 0.8rem 0.9rem !important;
+            background: var(--pro-surface) !important;
+            border: 1px solid transparent !important;
+            color: var(--pro-ink) !important;
+            font-size: 0.94rem;
+            font-weight: 700;
+            justify-content: flex-start !important;
+            text-align: left;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: #eff6ff !important;
+            border-color: #c8defa !important;
+            color: #0f172a !important;
+        }
+
+        .sidebar-link .button-with-icon {
+            width: 100%;
+            justify-content: flex-start !important;
+            gap: 0.75rem;
+        }
+
+        .sidebar-link .button-icon {
+            width: 1.15rem;
+            height: 1.15rem;
+            color: #475569;
+        }
+
+        .sidebar-link.active .button-icon,
+        .sidebar-link:hover .button-icon {
+            color: #0f172a;
+        }
+
+        .workspace-area {
+            border-radius: 16px !important;
+            padding: 1.1rem 1.15rem 1.25rem !important;
+            box-shadow: var(--pro-shadow) !important;
+        }
+
+        .dashboard-header {
+            border-radius: 14px !important;
+            padding: 1.6rem 1.7rem !important;
+            margin-bottom: 1.25rem !important;
+            background:
+                linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .dashboard-header::before,
+        .service-card::before,
+        .stat-card::before {
+            display: none !important;
+        }
+
+        .welcome h1,
+        .dashboard-header .welcome p {
+            color: #f8fafc !important;
+        }
+
+        .post-job-btn,
+        .btn-submit,
+        .btn-primary {
+            background: linear-gradient(135deg, var(--pro-highlight), #119bb0) !important;
+            border: 1px solid #119bb0 !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+            border-radius: 12px !important;
+        }
+
+        .btn-secondary,
+        .btn-cancel,
+        .icon-button,
+        .logout-btn {
+            background: var(--pro-surface) !important;
+            border: 1px solid var(--pro-border) !important;
+            color: var(--pro-ink) !important;
+            box-shadow: none !important;
+            border-radius: 12px !important;
+        }
+
+        .icon-button:hover,
+        .btn-secondary:hover,
+        .btn-cancel:hover,
+        .logout-btn:hover {
+            background: var(--pro-surface-muted) !important;
+            border-color: var(--pro-border-strong) !important;
+            color: var(--pro-ink) !important;
+            transform: none !important;
+        }
+
+        .stats-grid {
+            gap: 1rem !important;
+            margin-bottom: 1.2rem !important;
+        }
+
+        .stat-card {
+            border-radius: 14px !important;
+            padding: 1.2rem 1.15rem !important;
+            border-left: 4px solid var(--pro-highlight) !important;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+
+        .stat-card p {
+            color: var(--pro-muted) !important;
+            font-size: 0.76rem !important;
+            letter-spacing: 0.1em !important;
+        }
+
+        .filters-panel {
+            border-radius: 14px !important;
+            padding: 0.9rem !important;
+            margin-bottom: 1rem !important;
+            gap: 0.75rem !important;
+        }
+
+        .service-card {
+            border-radius: 14px !important;
+            border: 1px solid var(--pro-border) !important;
+            box-shadow: var(--pro-shadow-soft) !important;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08) !important;
+        }
+
+        .service-header {
+            padding: 1rem 1rem 0.8rem !important;
+        }
+
+        .service-body {
+            padding: 0 1rem 1rem !important;
+        }
+
+        .service-footer {
+            padding: 0.95rem 1rem 1rem !important;
+            border-top: 1px solid var(--pro-border) !important;
+            background: var(--pro-surface-muted) !important;
+        }
+
+        .service-category,
+        .status-badge,
+        .sentiment-badge {
+            background: #eff6ff !important;
+            color: #2563eb !important;
+            border: 1px solid #cfe1ff !important;
+            border-radius: 999px !important;
+        }
+
+        .job-card-header,
+        .modal-header {
+            background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+            color: #f8fafc !important;
+        }
+
+        .modal-content {
+            border-radius: 16px !important;
+        }
+
+        .notification-dropdown,
+        .empty-state {
+            border-radius: 14px !important;
+        }
+
+        .workspace-footer {
+            max-width: 1540px !important;
+            padding: 1rem 1.5rem 0 !important;
+        }
+
+        .workspace-footer .footer-card {
+            border-radius: 14px !important;
+            padding: 0.9rem 1rem !important;
+        }
+
+        @media (max-width: 1180px) {
+            .nav-right {
+                gap: 12px;
+            }
+
+            .search-bar {
+                width: 260px;
+            }
+        }
+
+        @media (max-width: 980px) {
+            .app-shell {
+                grid-template-columns: 1fr !important;
+            }
+
+            .sidebar-nav {
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                gap: 0.65rem !important;
+            }
+
+            .sidebar-link {
+                flex: 1 1 180px;
+                justify-content: center;
+            }
+
+            .workspace-area {
+                padding: 0.9rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2111,7 +2528,7 @@
                     <input type="text" id="searchInput" placeholder="Search for services or workers..." onkeyup="searchServices()">
                 </div>
                 <div class="mode-toggle">
-                    <span class="toggle-label" id="modeLabel">Client Mode</span>
+                    <span class="toggle-label" id="modeLabel">Client</span>
                     <div class="toggle-switch" id="modeToggle" onclick="toggleMode()">
                         <div class="toggle-slider"></div>
                     </div>
@@ -2168,17 +2585,91 @@
                     <p>Projects, quotes, invoices, approvals, and tracked releases in one place.</p>
                 </div>
                 <div class="sidebar-section-label">Shared</div>
-                <button type="button" class="sidebar-link active" id="sidebarDashboard" onclick="switchWorkspaceTab('dashboard')">Dashboard</button>
-                <button type="button" class="sidebar-link" id="sidebarRfqs" onclick="switchWorkspaceTab('rfqs')">Quotes / RFQs</button>
-                <button type="button" class="sidebar-link" id="sidebarInvoices" onclick="switchWorkspaceTab('invoices')">Invoices</button>
-                <button type="button" class="sidebar-link" id="sidebarProjects" onclick="switchWorkspaceTab('projects')">Project Tracker</button>
-                <button type="button" class="sidebar-link" id="sidebarAnalytics" onclick="switchWorkspaceTab('analytics')">Analytics</button>
+                <button type="button" class="sidebar-link active" id="sidebarDashboard" onclick="switchWorkspaceTab('dashboard')">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="8" height="8"></rect>
+                                <rect x="13" y="3" width="8" height="5"></rect>
+                                <rect x="13" y="10" width="8" height="11"></rect>
+                                <rect x="3" y="13" width="8" height="8"></rect>
+                            </svg>
+                        </span>
+                        <span>Dashboard</span>
+                    </span>
+                </button>
+                <button type="button" class="sidebar-link" id="sidebarRfqs" onclick="switchWorkspaceTab('rfqs')">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </span>
+                        <span>Quotes / RFQs</span>
+                    </span>
+                </button>
+                <button type="button" class="sidebar-link" id="sidebarInvoices" onclick="switchWorkspaceTab('invoices')">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                                <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <path d="M9 13h6"></path>
+                                <path d="M9 17h6"></path>
+                            </svg>
+                        </span>
+                        <span>Invoices</span>
+                    </span>
+                </button>
+                <button type="button" class="sidebar-link" id="sidebarProjects" onclick="switchWorkspaceTab('projects')">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                        </span>
+                        <span>Project Tracker</span>
+                    </span>
+                </button>
+                <button type="button" class="sidebar-link" id="sidebarAnalytics" onclick="switchWorkspaceTab('analytics')">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"></path>
+                                <path d="M7 15l4-4 3 3 5-7"></path>
+                            </svg>
+                        </span>
+                        <span>Analytics</span>
+                    </span>
+                </button>
                 {% if user.is_superuser %}
                 <div class="sidebar-section-label">Administration</div>
-                <a href="{% url 'admin-portal' %}" class="sidebar-link" id="sidebarAdminPortal">Admin Portal</a>
+                <a href="{% url 'admin-portal' %}" class="sidebar-link" id="sidebarAdminPortal">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82L4.21 7.2a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33h.01A1.65 1.65 0 0 0 10 3.25V3a2 2 0 0 1 4 0v.25a1.65 1.65 0 0 0 1.07 1.54h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01A1.65 1.65 0 0 0 20.75 10H21a2 2 0 0 1 0 4h-.25a1.65 1.65 0 0 0-1.35 1z"></path>
+                            </svg>
+                        </span>
+                        <span>Admin Portal</span>
+                    </span>
+                </a>
                 {% endif %}
                 <div class="sidebar-section-label">Account</div>
-                <a href="{% url 'logout' %}" class="sidebar-link sidebar-link-logout">Logout</a>
+                <a href="{% url 'logout' %}" class="sidebar-link sidebar-link-logout">
+                    <span class="button-with-icon">
+                        <span class="button-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <path d="M16 17l5-5-5-5"></path>
+                                <path d="M21 12H9"></path>
+                            </svg>
+                        </span>
+                        <span>Logout</span>
+                    </span>
+                </a>
             </aside>
             <div class="workspace-area">
                 <section id="dashboardSection">
@@ -4699,8 +5190,8 @@
 
             if (currentUser.role === 'provider') {
                 toggle.classList.add('active');
-                modeLabel.textContent = 'Provider Mode';
-                userRole.textContent = 'Service Provider';
+                modeLabel.textContent = 'Provider';
+                userRole.textContent = 'Provider';
                 welcomeMessage.textContent = `Welcome back, ${currentUser.firstName}`;
                 dashboardSubtitle.textContent = providerContentMode === 'mine'
                     ? 'Review the services you already offer and keep them client-ready'
@@ -4716,7 +5207,7 @@
                 };
             } else {
                 toggle.classList.remove('active');
-                modeLabel.textContent = 'Client Mode';
+                modeLabel.textContent = 'Client';
                 userRole.textContent = 'Client';
                 welcomeMessage.textContent = `Welcome back, ${currentUser.firstName}`;
                 dashboardSubtitle.textContent = 'Find skilled workers for your next project';
