@@ -1706,6 +1706,7 @@ class CountryViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = CountrySerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = None
     queryset = Country.objects.filter(is_active=True).order_by('name')
 
 
